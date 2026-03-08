@@ -101,7 +101,6 @@
 
   var MAP_STYLE_FILTERS = {
     standard: 'none',
-    wildwest: 'sepia(0.65) saturate(0.55) contrast(1.2) brightness(0.92)',
     noir: 'grayscale(1) contrast(1.35) brightness(0.9)'
   };
 
@@ -120,7 +119,7 @@
     watchId: null,
     debugFoundPlaces: [],
     debugChosenIndex: -1,
-    mapStyle: 'wildwest'
+    mapStyle: 'noir'
   };
 
   function $(id) {

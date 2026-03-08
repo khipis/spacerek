@@ -8,21 +8,22 @@ Aplikacja webowa do odkrywania ciekawych miejsc w okolicy poprzez losowy spacer.
 
 ## Wypchnięcie kodu do repo i deploy
 
-1. **Pierwszy raz (w katalogu `spacerek`):**
+W projekcie jest już **repo git** z jednym commitem i zdalnym **origin** → `https://github.com/khipis/spacerek.git`.
+
+1. **Pierwszy push (wykonaj u siebie w terminalu, żeby użyć swojego logowania do GitHub):**
    ```bash
-   git init
-   git add .
-   git commit -m "Initial commit – Spacerek"
-   git branch -M main
-   git remote add origin https://github.com/khipis/spacerek.git
+   cd /Users/kkorolczuk/work/spacerek   # albo ścieżka do swojego folderu spacerek
    git push -u origin main
    ```
+   Jeśli wcześniej nie ustawiałeś zdalnego:  
+   `git remote add origin https://github.com/khipis/spacerek.git`  
+   Przy HTTPS GitHub poprosi o login i hasło (albo **Personal Access Token** zamiast hasła).
 
 2. **Włącz GitHub Pages (Actions):**  
-   W repozytorium na GitHubie: **Settings** → **Pages** → **Build and deployment** → Source: **GitHub Actions**.  
-   Przy każdym `git push` do `main` workflow `.github/workflows/deploy-pages.yml` wdroży stronę pod adresem **https://khipis.github.io/spacerek/**.
+   Na GitHubie: repozytorium **khipis/spacerek** → **Settings** → **Pages** → **Build and deployment** → Source: **GitHub Actions**.  
+   Od tego momentu przy każdym `git push` do `main` workflow wdroży stronę pod adresem **https://khipis.github.io/spacerek/**.
 
-3. **Kolejne zmiany:** zwykły push wystarczy, deploy zrobi się sam.
+3. **Kolejne zmiany:** commit + push, deploy zrobi się sam.
    ```bash
    git add .
    git commit -m "Opis zmian"
