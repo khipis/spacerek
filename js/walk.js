@@ -315,6 +315,7 @@
       if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
     });
     state.visitedMarkers = [];
+    if (Sp.clearDecorationMarkers) Sp.clearDecorationMarkers();
     var ro = document.getElementById('reveal-overlay');
     var ao = document.getElementById('arrival-overlay');
     if (ro) { ro.classList.add('hidden'); ro.style.display = 'none'; ro.style.visibility = 'hidden'; }

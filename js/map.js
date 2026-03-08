@@ -9,6 +9,7 @@
   var getStyleIcons = Sp.getStyleIcons;
   var applyMapStyle = Sp.applyMapStyle;
   var getTierFromDistanceMeters = Sp.getTierFromDistanceMeters;
+  var getDecorationIcons = Sp.getDecorationIcons;
 
   function t(key, replacements) {
     return window.t ? window.t(key, replacements) : key;
@@ -64,6 +65,38 @@
     state.userMarker.bindTooltip(t('tooltip_you'), { permanent: false });
   }
 
+  function clearDecorationMarkers() {
+    if (!state.decorationMarkers) return;
+    state.decorationMarkers.forEach(function (m) {
+      if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
+    });
+    state.decorationMarkers = [];
+  }
+
+  function addDecorationMarkers(style, bounds) {
+    var icons = getDecorationIcons(style);
+    if (!icons.length || !state.map || !bounds) return;
+    var L = window.L;
+    var south = bounds.getSouth();
+    var north = bounds.getNorth();
+    var west = bounds.getWest();
+    var east = bounds.getEast();
+    state.decorationMarkers = [];
+    icons.forEach(function (char) {
+      var lat = south + Math.random() * (north - south);
+      var lng = west + Math.random() * (east - west);
+      var icon = L.divIcon({
+        className: 'decoration-marker',
+        html: '<span class="decoration-marker-pin">' + char + '</span>',
+        iconSize: [28, 28],
+        iconAnchor: [14, 28]
+      });
+      var marker = L.marker([lat, lng], { icon: icon }).addTo(state.map);
+      marker._decorationChar = char;
+      state.decorationMarkers.push(marker);
+    });
+  }
+
   function addAllTargetMarkers() {
     if (!state.map || !state.targetPlaces.length) return;
     var L = window.L;
@@ -76,8 +109,10 @@
       if (state.map.hasLayer(m)) state.map.removeLayer(m);
     });
     state.visitedMarkers = [];
+    clearDecorationMarkers();
 
-    var attractionChar = getStyleIcons(state.mapStyle || 'adventure').attraction;
+    var style = state.mapStyle || 'adventure';
+    var attractionChar = getStyleIcons(style).attraction || '?';
     state.targetPlaces.forEach(function (place, i) {
       var num = i + 1;
       var distM = state.userPosition ? haversine(state.userPosition.lat, state.userPosition.lng, place.lat, place.lng) : 0;
@@ -103,6 +138,7 @@
       bounds.extend([p.lat, p.lng]);
     });
     state.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+    addDecorationMarkers(style, bounds);
   }
 
   function removeTargetMarkerAt(index) {
@@ -133,4 +169,5 @@
   Sp.addAllTargetMarkers = addAllTargetMarkers;
   Sp.removeTargetMarkerAt = removeTargetMarkerAt;
   Sp.addVisitedMarker = addVisitedMarker;
+  Sp.clearDecorationMarkers = clearDecorationMarkers;
 })();

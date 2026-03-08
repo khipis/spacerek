@@ -12,7 +12,7 @@
     try {
       var s = localStorage.getItem(config.STORAGE_KEY_THEME);
       if (s === 'noir') return 'adventure';
-      if (s === 'vaporwave') return 'stroll';
+      if (s === 'vaporwave') return 'cute';
       return config.VALID_STYLES.indexOf(s) >= 0 ? s : 'adventure';
     } catch (e) { return 'adventure'; }
   }

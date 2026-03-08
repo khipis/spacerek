@@ -13,6 +13,7 @@
     targetPlaceIndex: 0,
     targetMarkers: [],
     visitedMarkers: [],
+    decorationMarkers: [],
     collectedIndices: {},
     map: null,
     userMarker: null,
@@ -68,6 +69,7 @@
     var state = window.Spacerek.state;
     var style = state.mapStyle || 'adventure';
     if (style === 'adventure') return 'przygoda';
+    if (style === 'cute') return 'cute';
     return 'spacerek';
   }
 

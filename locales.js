@@ -19,7 +19,8 @@
       start_btn_experience: '🏆 Twoje doświadczenie',
       start_btn_experience_title: 'Twoje doświadczenie',
       mode_adventure: 'Przygoda',
-      mode_stroll: 'Spacerek',
+      mode_stroll: 'Spacer',
+      mode_cute: 'Słodki',
 
       // Map / status
       map_status_loading: 'Ładowanie lokalizacji…',
@@ -103,7 +104,8 @@
       start_btn_experience: '🏆 Your experience',
       start_btn_experience_title: 'Your experience',
       mode_adventure: 'Adventure',
-      mode_stroll: 'Stroll',
+      mode_stroll: 'Walk',
+      mode_cute: 'Cute',
 
       map_status_loading: 'Loading location…',
       map_style_label: 'Mode:',

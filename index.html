@@ -30,8 +30,9 @@
         </div>
         <p class="instruction instruction-map-style" data-i18n="start_instruction_map_style">Tryb:</p>
         <div class="map-style-buttons">
+          <button type="button" class="btn-map-style" data-style="stroll" data-i18n="mode_stroll" data-i18n-title="mode_stroll" title="Walk">Walk</button>
           <button type="button" class="btn-map-style" data-style="adventure" data-i18n="mode_adventure" data-i18n-title="mode_adventure" title="Przygoda">Przygoda</button>
-          <button type="button" class="btn-map-style" data-style="stroll" data-i18n="mode_stroll" data-i18n-title="mode_stroll" title="Spacerek">Spacerek</button>
+          <button type="button" class="btn-map-style" data-style="cute" data-i18n="mode_cute" data-i18n-title="mode_cute" title="Cute">Cute</button>
         </div>
         <button type="button" id="btn-start" class="btn-primary" disabled data-i18n="start_btn_start">Rozpocznij spacer</button>
         <button type="button" id="btn-experience" class="btn-experience" data-i18n-title="start_btn_experience_title" data-i18n="start_btn_experience" title="Twoje doświadczenie">🏆 Twoje doświadczenie</button>
@@ -53,8 +54,9 @@
         <div id="map-style-bar" class="map-style-bar hidden">
           <span class="map-style-label" data-i18n="map_style_label">Tryb:</span>
           <select id="map-style-select" class="map-style-select" data-i18n-title="map_style_select_title" title="Zmień tryb">
+            <option value="stroll">Walk</option>
             <option value="adventure">Przygoda</option>
-            <option value="stroll">Spacerek</option>
+            <option value="cute">Cute</option>
           </select>
         </div>
         <div id="loading-place" class="loading-box hidden">
