@@ -16,7 +16,7 @@
   };
 
   var MAP_STYLE_ICONS = {
-    adventure: { user: '🦸', attraction: '?', visited: '✔' },
+    adventure: { user: '🧝‍♂️', attraction: '?', visited: '✔' },
     stroll: { user: '🐰', attraction: '❤️', visited: '💜' }
   };
 
