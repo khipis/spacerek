@@ -4,6 +4,20 @@
   var OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
   var ARRIVAL_METERS = 50;
   var STORAGE_KEY = 'spacerek_experience';
+  var STORAGE_KEY_THEME = 'spacerek_theme';
+
+  function getStoredTheme() {
+    try {
+      var s = localStorage.getItem(STORAGE_KEY_THEME);
+      return (s === 'vaporwave' || s === 'noir') ? s : 'noir';
+    } catch (e) { return 'noir'; }
+  }
+
+  function setStoredTheme(theme) {
+    try {
+      localStorage.setItem(STORAGE_KEY_THEME, theme);
+    } catch (e) {}
+  }
 
   function t(key, replacements) {
     return window.t ? window.t(key, replacements) : key;
@@ -178,7 +192,7 @@
     watchId: null,
     debugFoundPlaces: [],
     debugChosenIndex: -1,
-    mapStyle: 'noir'
+    mapStyle: getStoredTheme()
   };
 
   function $(id) {
@@ -304,6 +318,7 @@
     styleButtons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         state.mapStyle = btn.getAttribute('data-style') || 'noir';
+        setStoredTheme(state.mapStyle);
         updateMapStyleSelection();
         applyTheme();
       });
@@ -940,6 +955,7 @@
     if (styleSelect) {
       styleSelect.addEventListener('change', function () {
         state.mapStyle = styleSelect.value || 'noir';
+        setStoredTheme(state.mapStyle);
         applyMapStyle();
       });
     }
