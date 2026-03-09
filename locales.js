@@ -67,9 +67,12 @@
 
       // Status messages (setStatus)
       status_getting_location: 'Pobieram Twoją lokalizację…',
+      status_getting_location_ios: 'Pobieram Twoją lokalizację… (na iPhonie zezwól na dostęp, gdy Safari zapyta)',
       status_no_geolocation: 'Twoja przeglądarka nie obsługuje geolokalizacji.',
       status_location_denied: 'Potrzebujemy zgody na lokalizację.',
       status_location_error: 'Brak dostępu do lokalizacji. Włącz GPS i odśwież.',
+      ios_location_denied: 'Zezwól na dostęp do lokalizacji, gdy Safari zapyta. Albo: Ustawienia > Safari > Lokalizacja.',
+      ios_location_timeout: 'Czekanie na GPS trwało zbyt długo. Sprawdź: Ustawienia > Prywatność > Usługi lokalizacyjne — włącz dla Safari.',
       ios_https_hint: 'Na iPhonie Safari udostępnia lokalizację tylko przez HTTPS. Otwórz aplikację przez https:// — np. tunel ngrok (ngrok http 8000) lub wdrożoną stronę z SSL.',
       ios_banner: 'Na iPhonie aplikacja działa tylko przez HTTPS. Na komputerze: python3 -m http.server 8000. Na telefonie otwórz adres https z tunelu (ngrok) lub wdróż na serwer z SSL.',
       status_map_load_error: 'Błąd ładowania mapy',
@@ -157,9 +160,12 @@
       experience_empty: "You haven't visited any place yet. Start a walk!",
 
       status_getting_location: 'Getting your location…',
+      status_getting_location_ios: 'Getting your location… (on iPhone, allow access when Safari asks)',
       status_no_geolocation: 'Your browser does not support geolocation.',
       status_location_denied: 'We need your consent for location.',
       status_location_error: 'No access to location. Enable GPS and refresh.',
+      ios_location_denied: 'Allow location access when Safari prompts. Or: Settings > Safari > Location.',
+      ios_location_timeout: 'GPS took too long. Check: Settings > Privacy > Location Services — enable for Safari.',
       ios_https_hint: 'On iPhone, Safari only allows location over HTTPS. Open the app via https:// — e.g. ngrok tunnel (ngrok http 8000) or a deployed site with SSL.',
       ios_banner: 'On iPhone the app only works over HTTPS. On your computer run: python3 -m http.server 8000. On the phone open the https URL from a tunnel (ngrok) or deploy to a server with SSL.',
       status_map_load_error: 'Map loading error',

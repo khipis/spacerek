@@ -364,7 +364,6 @@
       state.mapStyle = selectedStyleBtn.getAttribute('data-style') || state.mapStyle;
       if (typeof Sp.setStoredTheme === 'function') Sp.setStoredTheme(state.mapStyle);
     }
-    setStatus(t('status_getting_location'), '');
     if (!navigator.geolocation) {
       setStatus(t('status_no_geolocation'), '');
       return;
@@ -374,7 +373,9 @@
       return;
     }
 
-    var timeoutMs = (isIOS() ? 18 : 10) * 1000;
+    var onIOS = isIOS();
+    setStatus(t(onIOS ? 'status_getting_location_ios' : 'status_getting_location'), '');
+    var timeoutMs = (onIOS ? 25 : 10) * 1000;
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         state.userPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -382,7 +383,16 @@
         initMapAndSearch();
       },
       function (err) {
-        var msg = (isInsecureContext() && isIOS()) ? t('ios_https_hint') : (err.code === 1 ? t('status_location_denied') : t('status_location_error'));
+        var msg;
+        if (isInsecureContext() && onIOS) {
+          msg = t('ios_https_hint');
+        } else if (onIOS && err && err.code === 1) {
+          msg = t('ios_location_denied');
+        } else if (onIOS && err && err.code === 3) {
+          msg = t('ios_location_timeout');
+        } else {
+          msg = (err && err.code === 1) ? t('status_location_denied') : t('status_location_error');
+        }
         setStatus(msg, '');
       },
       { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 0 }
