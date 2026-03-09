@@ -22,7 +22,10 @@
     debugChosenIndex: -1,
     mapStyle: 'adventure',
     stats: { monstersMet: 0, carrotsCollected: 0, animalsMet: 0 },
-    metDecorationIndices: {}
+    metDecorationIndices: {},
+    metMonsterNames: [],
+    metAnimalNames: [],
+    metCarrotNames: []
   };
 
   function $(id) {

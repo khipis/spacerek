@@ -43,6 +43,8 @@
     return Array.isArray(data[m]) ? data[m] : [];
   }
 
+  var DECORATION_XP = { carrot: 5, monster: 10, animal: 10 };
+
   function saveExperienceEntry(place, tier, xpConfig) {
     var data = getExperienceRaw();
     var m = getCurrentMode();
@@ -55,6 +57,21 @@
       lng: place.lng,
       tier: tier,
       xp: cfg.xp,
+      collectedAt: new Date().toISOString()
+    });
+    try {
+      localStorage.setItem(config.STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {}
+  }
+
+  function saveDecorationEntry(type, name, xp) {
+    var data = getExperienceRaw();
+    var m = getCurrentMode();
+    if (!Array.isArray(data[m])) data[m] = [];
+    data[m].push({
+      type: type,
+      name: name,
+      xp: xp != null ? xp : (DECORATION_XP[type] || 5),
       collectedAt: new Date().toISOString()
     });
     try {
@@ -77,5 +94,6 @@
   Sp.getExperienceRaw = getExperienceRaw;
   Sp.getExperience = getExperience;
   Sp.saveExperienceEntry = saveExperienceEntry;
+  Sp.saveDecorationEntry = saveDecorationEntry;
   Sp.clearStorage = clearStorage;
 })();

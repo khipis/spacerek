@@ -415,11 +415,28 @@
     summaryTitle.className = 'stats-section-title';
     summaryTitle.textContent = t('stats_summary');
     listEl.appendChild(summaryTitle);
+    function addNamesList(names, className) {
+      if (!names || !names.length) return;
+      var ul = document.createElement('ul');
+      ul.className = className || 'stats-names-list';
+      names.forEach(function (name) {
+        var item = document.createElement('li');
+        item.className = 'stats-name-item';
+        item.textContent = name;
+        ul.appendChild(item);
+      });
+      listEl.appendChild(ul);
+    }
     addStatRow('📍', t('stats_places'), placesCount);
-    if (style === 'adventure') addStatRow('👹', t('stats_monsters'), stats.monstersMet);
+    if (style === 'adventure') {
+      addStatRow('👹', t('stats_monsters'), stats.monstersMet);
+      addNamesList(state.metMonsterNames || [], 'stats-names-list');
+    }
     if (style === 'cute') {
       addStatRow('🥕', t('stats_carrots'), stats.carrotsCollected);
+      addNamesList(state.metCarrotNames || [], 'stats-names-list');
       addStatRow('🐾', t('stats_animals'), stats.animalsMet);
+      addNamesList(state.metAnimalNames || [], 'stats-names-list');
     }
     if (state.visitedMarkers && state.visitedMarkers.length > 0) {
       var listTitle = document.createElement('h3');

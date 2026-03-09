@@ -61,11 +61,20 @@
     listEl.innerHTML = '';
     list.slice().reverse().forEach(function (entry) {
       var li = document.createElement('li');
-      var tierClass = 'exp-tier-' + (entry.tier || 'casual');
-      li.innerHTML =
-        '<span class="exp-place-name">' + escapeHtml(entry.name) + '</span>' +
-        '<span class="exp-tier ' + tierClass + '">' + t('tier_' + (entry.tier || 'casual')) + '</span>' +
-        '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span>';
+      if (entry.type === 'carrot' || entry.type === 'monster' || entry.type === 'animal') {
+        var icon = entry.type === 'carrot' ? '🥕' : (entry.type === 'monster' ? '👹' : '🐾');
+        li.className = 'exp-entry exp-entry-decoration';
+        li.innerHTML =
+          '<span class="exp-decoration-icon">' + icon + '</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span>';
+      } else {
+        var tierClass = 'exp-tier-' + (entry.tier || 'casual');
+        li.innerHTML =
+          '<span class="exp-place-name">' + escapeHtml(entry.name) + '</span>' +
+          '<span class="exp-tier ' + tierClass + '">' + t('tier_' + (entry.tier || 'casual')) + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span>';
+      }
       listEl.appendChild(li);
     });
     if (list.length === 0) {

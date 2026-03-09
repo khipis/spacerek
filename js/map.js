@@ -124,6 +124,7 @@
   function checkDecorationProximity(lat, lng) {
     if (!state.decorationMarkers || !state.decorationMarkers.length) return;
     var radius = (config && config.DECORATION_PROXIMITY_METERS) || 35;
+    var saveDecorationEntry = Sp.saveDecorationEntry;
     state.decorationMarkers.forEach(function (m, i) {
       if (state.metDecorationIndices[i]) return;
       var pos = m.getLatLng && m.getLatLng();
@@ -132,9 +133,18 @@
       if (dist > radius) return;
       state.metDecorationIndices[i] = true;
       var type = m._decorationType || 'monster';
-      if (type === 'monster') state.stats.monstersMet += 1;
-      else if (type === 'carrot') state.stats.carrotsCollected += 1;
-      else if (type === 'animal') state.stats.animalsMet += 1;
+      var name = m._decorationName || (type === 'carrot' ? t('carrot_name') : '?');
+      if (type === 'monster') {
+        state.stats.monstersMet += 1;
+        state.metMonsterNames.push(name);
+      } else if (type === 'carrot') {
+        state.stats.carrotsCollected += 1;
+        state.metCarrotNames.push(name);
+      } else if (type === 'animal') {
+        state.stats.animalsMet += 1;
+        state.metAnimalNames.push(name);
+      }
+      if (saveDecorationEntry) saveDecorationEntry(type, name);
       if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
     });
   }
@@ -154,6 +164,9 @@
     clearDecorationMarkers();
     state.stats = { monstersMet: 0, carrotsCollected: 0, animalsMet: 0 };
     state.metDecorationIndices = {};
+    state.metMonsterNames = [];
+    state.metAnimalNames = [];
+    state.metCarrotNames = [];
 
     var style = state.mapStyle || 'adventure';
     var attractionChar = getStyleIcons(style).attraction || '?';
