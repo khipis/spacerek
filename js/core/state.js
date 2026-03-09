@@ -81,10 +81,25 @@
     return 'spacerek';
   }
 
+  function showToast(message, type) {
+    var container = document.getElementById('toast-container');
+    if (!container || !message) return;
+    var el = document.createElement('div');
+    el.className = 'toast' + (type === 'wound' ? ' toast-wound' : '');
+    el.setAttribute('role', 'status');
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(function () {
+      el.classList.add('toast-out');
+      setTimeout(function () { el.remove(); }, 300);
+    }, 3200);
+  }
+
   window.Spacerek.$ = $;
   window.Spacerek.show = show;
   window.Spacerek.showScreen = showScreen;
   window.Spacerek.escapeHtml = escapeHtml;
   window.Spacerek.haversine = haversine;
   window.Spacerek.getCurrentMode = getCurrentMode;
+  window.Spacerek.showToast = showToast;
 })();

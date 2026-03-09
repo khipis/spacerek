@@ -496,7 +496,6 @@
     }
     if (style === 'cute') {
       addStatRow('🥕', t('stats_carrots'), carrotsCollected);
-      addNamesList(state.metCarrotNames || [], 'stats-names-list');
       addStatRow('🐾', t('stats_animals'), animalsMet);
       addNamesList(state.metAnimalNames || [], 'stats-names-list');
     }

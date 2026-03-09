@@ -15,15 +15,13 @@
     return window.t ? window.t(key, replacements) : key;
   }
 
-  function animateWalkToTarget(doneCallback) {
-    if (!state.map || !state.userMarker || !state.targetPlace) {
+  function animateWalkToPoint(endLat, endLng, doneCallback) {
+    if (!state.map || !state.userMarker || !state.userPosition) {
       if (doneCallback) doneCallback();
       return;
     }
     var startLat = state.userPosition.lat;
     var startLng = state.userPosition.lng;
-    var endLat = state.targetPlace.lat;
-    var endLng = state.targetPlace.lng;
     var startTime = performance.now();
 
     function tick(now) {
@@ -48,6 +46,14 @@
       requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
+  }
+
+  function animateWalkToTarget(doneCallback) {
+    if (!state.map || !state.userMarker || !state.targetPlace) {
+      if (doneCallback) doneCallback();
+      return;
+    }
+    animateWalkToPoint(state.targetPlace.lat, state.targetPlace.lng, doneCallback);
   }
 
   function simulateArrival() {
@@ -75,6 +81,7 @@
     animateWalkToTarget(onReached);
   }
 
+  Sp.animateWalkToPoint = animateWalkToPoint;
   Sp.animateWalkToTarget = animateWalkToTarget;
   Sp.simulateArrival = simulateArrival;
 })();

@@ -194,39 +194,31 @@
     var m = state.decorationMarkers[index];
     var pos = m.getLatLng && m.getLatLng();
     if (!pos) return;
-    state.userPosition = { lat: pos.lat, lng: pos.lng };
-    if (state.userMarker) state.userMarker.setLatLng([pos.lat, pos.lng]);
-    if (state.map) state.map.panTo([pos.lat, pos.lng]);
-    checkDecorationProximity(pos.lat, pos.lng);
-    state.selectedDecorationIndex = null;
-    updateDecorationSelectionVisual();
+    function onReached() {
+      checkDecorationProximity(pos.lat, pos.lng);
+      state.selectedDecorationIndex = null;
+      updateDecorationSelectionVisual();
+    }
+    if (typeof Sp.animateWalkToPoint === 'function' && state.userPosition) {
+      Sp.animateWalkToPoint(pos.lat, pos.lng, onReached);
+    } else {
+      state.userPosition = { lat: pos.lat, lng: pos.lng };
+      if (state.userMarker) state.userMarker.setLatLng([pos.lat, pos.lng]);
+      if (state.map) state.map.panTo([pos.lat, pos.lng]);
+      onReached();
+    }
   }
 
-  function showChestResult(outcome, data) {
-    var overlay = document.getElementById('chest-result-overlay');
-    var titleEl = document.getElementById('chest-result-title');
-    var bodyEl = document.getElementById('chest-result-body');
-    var iconEl = document.getElementById('chest-result-icon');
-    if (!overlay || !titleEl || !bodyEl) return;
-    if (iconEl) {
-      if (outcome === 'artifact') iconEl.textContent = '🏺';
-      else if (outcome === 'xp') iconEl.textContent = '✨';
-      else iconEl.textContent = '🩹';
-    }
+  function showChestResultToast(outcome, data) {
+    if (!Sp.showToast) return;
     if (outcome === 'artifact') {
-      titleEl.textContent = t('chest_result_artifact_title');
-      bodyEl.textContent = (data || '').trim() ? data : t('chest_result_artifact');
+      Sp.showToast('🏺 ' + t('chest_result_artifact_title') + ' ' + (data || t('chest_artifact_unknown')));
     } else if (outcome === 'xp') {
-      titleEl.textContent = t('chest_result_xp_title');
-      bodyEl.textContent = t('chest_result_xp_body', { xp: data != null ? data : 15 });
+      var xp = data != null ? data : 15;
+      Sp.showToast('✨ ' + t('chest_result_xp_title') + ' +' + xp + ' XP');
     } else {
-      titleEl.textContent = t('chest_result_wound_title');
-      bodyEl.textContent = t('chest_result_wound_body');
+      Sp.showToast('🩹 ' + t('chest_result_wound_title'), 'wound');
     }
-    overlay.classList.remove('hidden');
-    overlay.style.display = 'flex';
-    overlay.style.visibility = 'visible';
-    overlay.style.zIndex = '99999';
   }
 
   function resolveChest() {
@@ -240,15 +232,15 @@
       var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : t('chest_artifact_unknown');
       state.artifactsFound.push(artifactName);
       if (saveDecorationEntry) saveDecorationEntry('artifact', artifactName, 15);
-      showChestResult('artifact', artifactName);
+      showChestResultToast('artifact', artifactName);
     } else if (roll === 2) {
       var xp = 15;
       if (saveDecorationEntry) saveDecorationEntry('chest_xp', t('chest_xp_label'), xp);
-      showChestResult('xp', xp);
+      showChestResultToast('xp', xp);
     } else {
       state.wounds += 1;
       if (saveDecorationEntry) saveDecorationEntry('wound', t('chest_wound_label'), 0);
-      showChestResult('wound');
+      showChestResultToast('wound');
     }
     if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
   }
@@ -281,8 +273,10 @@
         var spoiledXp = (config && config.CARROT_SPOILED_XP) != null ? config.CARROT_SPOILED_XP : -3;
         if (Math.random() < spoiledChance) {
           if (saveDecorationEntry) saveDecorationEntry('spoiled_carrot', name, spoiledXp);
+          if (Sp.showToast) Sp.showToast('🥕 ' + (name || t('carrot_spoiled_label')) + ' ' + spoiledXp + ' XP', 'wound');
         } else {
           if (saveDecorationEntry) saveDecorationEntry(type, name);
+          if (Sp.showToast) Sp.showToast('🥕 ' + (name || t('carrot_name')) + ' +5 XP');
         }
         if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
         return;
