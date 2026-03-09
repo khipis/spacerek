@@ -25,7 +25,8 @@
     metDecorationIndices: {},
     metMonsterNames: [],
     metAnimalNames: [],
-    metCarrotNames: []
+    metCarrotNames: [],
+    selectedDecorationIndex: null
   };
 
   function $(id) {

@@ -145,8 +145,59 @@
       marker._decorationType = type;
       marker._decorationName = name;
       marker.bindTooltip(name, { permanent: false });
+      marker.on('click', function () {
+        state.selectedDecorationIndex = i;
+        state.decorationMarkers.forEach(function (m, j) {
+          var el = m.getElement && m.getElement();
+          if (el) el.classList.toggle('decoration-marker-selected', j === i);
+        });
+      });
       state.decorationMarkers.push(marker);
     });
+  }
+
+  function updateDecorationSelectionVisual() {
+    if (!state.decorationMarkers) return;
+    state.decorationMarkers.forEach(function (m, j) {
+      var el = m.getElement && m.getElement();
+      if (el) el.classList.toggle('decoration-marker-selected', j === state.selectedDecorationIndex);
+    });
+  }
+
+  function clearDecorationSelection() {
+    state.selectedDecorationIndex = null;
+    updateDecorationSelectionVisual();
+  }
+
+  function getNearestUnmetDecoration() {
+    if (!state.decorationMarkers || !state.decorationMarkers.length || !state.userPosition) return null;
+    var best = null;
+    var bestDist = Infinity;
+    state.decorationMarkers.forEach(function (m, i) {
+      if (state.metDecorationIndices[i]) return;
+      var pos = m.getLatLng && m.getLatLng();
+      if (!pos) return;
+      var d = haversine(state.userPosition.lat, state.userPosition.lng, pos.lat, pos.lng);
+      if (d < bestDist) {
+        bestDist = d;
+        best = { marker: m, index: i };
+      }
+    });
+    return best;
+  }
+
+  function goToDecoration(index) {
+    if (!state.decorationMarkers || !state.decorationMarkers[index]) return;
+    if (state.metDecorationIndices[index]) return;
+    var m = state.decorationMarkers[index];
+    var pos = m.getLatLng && m.getLatLng();
+    if (!pos) return;
+    state.userPosition = { lat: pos.lat, lng: pos.lng };
+    if (state.userMarker) state.userMarker.setLatLng([pos.lat, pos.lng]);
+    if (state.map) state.map.panTo([pos.lat, pos.lng]);
+    checkDecorationProximity(pos.lat, pos.lng);
+    state.selectedDecorationIndex = null;
+    updateDecorationSelectionVisual();
   }
 
   function checkDecorationProximity(lat, lng) {
@@ -190,6 +241,7 @@
     });
     state.visitedMarkers = [];
     clearDecorationMarkers();
+    state.selectedDecorationIndex = null;
     state.stats = { monstersMet: 0, carrotsCollected: 0, animalsMet: 0 };
     state.metDecorationIndices = {};
     state.metMonsterNames = [];
@@ -256,4 +308,8 @@
   Sp.addVisitedMarker = addVisitedMarker;
   Sp.clearDecorationMarkers = clearDecorationMarkers;
   Sp.checkDecorationProximity = checkDecorationProximity;
+  Sp.getNearestUnmetDecoration = getNearestUnmetDecoration;
+  Sp.goToDecoration = goToDecoration;
+  Sp.clearDecorationSelection = clearDecorationSelection;
+  Sp.updateDecorationSelectionVisual = updateDecorationSelectionVisual;
 })();

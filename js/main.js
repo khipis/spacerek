@@ -43,10 +43,28 @@
     return window.t ? window.t(key, replacements) : key;
   }
 
+  function rollAdventureStats() {
+    function roll(min, max) {
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+    return {
+      level: 1,
+      strength: roll(3, 12),
+      dexterity: roll(3, 12),
+      intelligence: roll(3, 12)
+    };
+  }
+
   function ensureCharacter(mode) {
     if (mode !== 'adventure' && mode !== 'cute') return null;
     var cur = getStoredCharacter(mode);
-    if (cur && cur.name && cur.emoji) return cur;
+    if (cur && cur.name && cur.emoji) {
+      if (mode === 'adventure' && cur.stats && (cur.stats.strength == null || cur.stats.dexterity == null || cur.stats.intelligence == null)) {
+        cur.stats = rollAdventureStats();
+        setStoredCharacter(mode, cur);
+      }
+      return cur;
+    }
     var data = window.Spacerek.characterData && window.Spacerek.characterData[mode];
     if (!data) return null;
     var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
@@ -54,7 +72,8 @@
     var emojis = data.emojis || [];
     var name = (names && names.length) ? names[Math.floor(Math.random() * names.length)] : (mode === 'adventure' ? 'Bohater' : 'Przyjaciel');
     var emoji = emojis.length ? emojis[Math.floor(Math.random() * emojis.length)] : (mode === 'adventure' ? '🧙' : '🐰');
-    var character = { name: name, emoji: emoji, stats: { level: 1 } };
+    var stats = mode === 'adventure' ? rollAdventureStats() : { level: 1 };
+    var character = { name: name, emoji: emoji, stats: stats };
     setStoredCharacter(mode, character);
     return character;
   }
@@ -75,7 +94,21 @@
     if (char) {
       if (emojiEl) emojiEl.textContent = char.emoji;
       if (nameEl) nameEl.textContent = char.name;
-      if (statsEl) statsEl.textContent = t('character_level', { level: (char.stats && char.stats.level) || 1 });
+      if (statsEl) {
+        var s = char.stats || {};
+        var level = s.level || 1;
+        if (mode === 'adventure' && (s.strength != null || s.dexterity != null || s.intelligence != null)) {
+          var str = s.strength != null ? s.strength : '?';
+          var dex = s.dexterity != null ? s.dexterity : '?';
+          var int_ = s.intelligence != null ? s.intelligence : '?';
+          statsEl.textContent = t('character_level', { level: level }) + ' · ' +
+            t('character_strength') + ' ' + str + ' ' +
+            t('character_dexterity') + ' ' + dex + ' ' +
+            t('character_intelligence') + ' ' + int_;
+        } else {
+          statsEl.textContent = t('character_level', { level: level });
+        }
+      }
       if (inputEl) {
         inputEl.value = char.name;
         inputEl.classList.add('hidden');
@@ -93,7 +126,8 @@
     var name = (names && names.length) ? names[Math.floor(Math.random() * names.length)] : (mode === 'adventure' ? 'Bohater' : 'Przyjaciel');
     var emoji = emojis.length ? emojis[Math.floor(Math.random() * emojis.length)] : (mode === 'adventure' ? '🧙' : '🐰');
     var cur = getStoredCharacter(mode) || {};
-    var character = { name: name, emoji: emoji, stats: cur.stats || { level: 1 } };
+    var stats = mode === 'adventure' ? rollAdventureStats() : (cur.stats || { level: 1 });
+    var character = { name: name, emoji: emoji, stats: stats };
     setStoredCharacter(mode, character);
     renderCharacterCard(mode);
     if (typeof applyMapStyle === 'function') applyMapStyle();
@@ -133,7 +167,9 @@
     updateDebugPanel();
     updateRevealButton();
     renderExperiencePanel();
-    if (typeof renderCharacterCard === 'function') renderCharacterCard(state.mapStyle);
+    try {
+      if (typeof renderCharacterCard === 'function') renderCharacterCard(state.mapStyle);
+    } catch (e) { console.error('renderCharacterCard:', e); }
   }
 
   function initStartScreen() {
@@ -152,7 +188,10 @@
     if (defaultKmBtn) {
       buttons.forEach(function (b) { b.classList.remove('selected'); });
       defaultKmBtn.classList.add('selected');
+      state.selectedKm = 1.9;
       btnStart.disabled = false;
+    } else if (state.selectedKm == null) {
+      state.selectedKm = 1.9;
     }
 
     var styleButtons = document.querySelectorAll('.btn-map-style');
@@ -187,13 +226,17 @@
     }
 
     btnStart.addEventListener('click', function () {
-      if (state.selectedKm == null) return;
+      if (state.selectedKm == null) state.selectedKm = 1.9;
       startWalk();
     });
 
-    ensureCharacter('adventure');
-    ensureCharacter('cute');
-    renderCharacterCard(state.mapStyle);
+    try {
+      ensureCharacter('adventure');
+      ensureCharacter('cute');
+      renderCharacterCard(state.mapStyle);
+    } catch (e) {
+      console.error('Character init:', e);
+    }
 
     var btnReroll = $('btn-character-reroll');
     var btnRename = $('btn-character-rename');
@@ -288,6 +331,23 @@
 
     var btnSimulate = $('btn-simulate-arrival');
     if (btnSimulate) btnSimulate.addEventListener('click', simulateArrival);
+
+    var btnGoToDecoration = $('btn-go-to-decoration');
+    if (btnGoToDecoration) {
+      btnGoToDecoration.addEventListener('click', function () {
+        var idx = state.selectedDecorationIndex;
+        if (idx != null && !state.metDecorationIndices[idx]) {
+          Sp.goToDecoration(idx);
+        } else {
+          var nearest = Sp.getNearestUnmetDecoration && Sp.getNearestUnmetDecoration();
+          if (nearest) {
+            Sp.goToDecoration(nearest.index);
+          } else {
+            if (Sp.setStatus) Sp.setStatus(t('walk_go_to_decoration_none'), '');
+          }
+        }
+      });
+    }
 
     var styleSelect = document.getElementById('map-style-select');
     if (styleSelect) {

@@ -554,6 +554,44 @@ body[data-theme="cute"] #btn-simulate-arrival.btn-simulate-arrival-fab:hover {
   display: none !important;
 }
 
+/* Go to decoration (monster/carrot/animal) button */
+#btn-go-to-decoration.btn-go-to-decoration-fab {
+  position: absolute;
+  bottom: 52px;
+  left: 16px;
+  z-index: 99999;
+  padding: 8px 12px;
+  border: 2px solid var(--accent-hover);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  pointer-events: auto;
+}
+
+#btn-go-to-decoration.btn-go-to-decoration-fab:hover {
+  background: var(--accent-hover);
+  border-color: var(--text);
+  box-shadow: var(--shadow-lg);
+}
+
+#btn-go-to-decoration.btn-go-to-decoration-fab.hidden {
+  display: none !important;
+}
+
+/* Selected decoration marker (clicked) */
+.decoration-marker-selected .decoration-marker-pin {
+  box-shadow: 0 0 0 3px var(--accent);
+  border-radius: 50%;
+}
+
 /* ========== MAP OVERLAY ========== */
 #map-overlay {
   position: absolute;

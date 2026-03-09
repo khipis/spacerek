@@ -27,6 +27,9 @@
       character_rename: '✏️ Zmień imię',
       character_rename_title: 'Zmień imię postaci',
       character_level: 'Poziom {level}',
+      character_strength: 'Siła',
+      character_dexterity: 'Zręczność',
+      character_intelligence: 'Inteligencja',
 
       // Map and status
       map_status_loading: 'Ładowanie lokalizacji…',
@@ -44,6 +47,9 @@
       walk_btn_experience_title: 'Twoje doświadczenie',
       walk_btn_simulate_title: 'Symuluj dojście do celu (test)',
       walk_btn_simulate_label: '📍 Symuluj dojście',
+      walk_btn_go_to_decoration: '🎯 Do potwora/marchewki/zwierzątka',
+      walk_btn_go_to_decoration_title: 'Dojdź do zaznaczonego lub najbliższego',
+      walk_go_to_decoration_none: 'Brak do zebrania w okolicy.',
       walk_btn_debug_title: 'Pokaż/ukryj debug',
 
       // Debug
@@ -133,6 +139,9 @@
       character_rename: '✏️ Change name',
       character_rename_title: 'Change character name',
       character_level: 'Level {level}',
+      character_strength: 'Strength',
+      character_dexterity: 'Dexterity',
+      character_intelligence: 'Intelligence',
 
       map_status_loading: 'Loading location…',
       map_style_label: 'Mode:',
@@ -148,6 +157,9 @@
       walk_btn_experience_title: 'Your experience',
       walk_btn_simulate_title: 'Simulate arrival (test)',
       walk_btn_simulate_label: '📍 Simulate arrival',
+      walk_btn_go_to_decoration: '🎯 Go to monster/carrot/animal',
+      walk_btn_go_to_decoration_title: 'Reach selected or nearest',
+      walk_go_to_decoration_none: 'Nothing left to collect nearby.',
       walk_btn_debug_title: 'Show/hide debug',
 
       debug_summary_empty: 'No search yet (start a walk).',
