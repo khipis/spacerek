@@ -13,18 +13,18 @@
   var MAP_STYLE_FILTERS = {
     adventure: 'grayscale(1) contrast(1.35) brightness(0.9)',
     stroll: 'contrast(1.08) brightness(1.02)',
-    cute: 'hue-rotate(-75deg) saturate(1.6) contrast(1.05) brightness(1.02)'
+    cute: 'hue-rotate(-75deg) saturate(1.6) contrast(1.05) brightness(1.02)',
   };
 
   var ADVENTURE_MONSTERS = ['👹', '👺', '🐉', '👾', '💀', '🦇', '🐲', '🧌', '🐍', '🕷️'];
   var CUTE_DECORATIONS = [
     { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' },
     { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' },
-    { char: '🥕', type: 'carrot' }, { char: '🐰', type: 'animal' }, { char: '🐹', type: 'animal' }, { char: '🐿️', type: 'animal' }
+    { char: '🥕', type: 'carrot' }, { char: '🐰', type: 'animal' }, { char: '🐹', type: 'animal' }, { char: '🐿️', type: 'animal' }, { char: '🦄', type: 'animal' }
   ];
 
   var MAP_STYLE_ICONS = {
-    adventure: { user: '🧝‍♂️', attraction: '?', visited: '✔' },
+    adventure: { user: '🧙', attraction: '?', visited: '✔' },
     stroll: { user: '🚶', attraction: '⭐', visited: '✓' },
     cute: { user: '🐰', attraction: '❤️', visited: '✅' }
   };

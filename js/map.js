@@ -74,6 +74,14 @@
     state.decorationMarkers = [];
   }
 
+  function pickRandomName(type, lang) {
+    var names = (window.Spacerek && window.Spacerek.decorationNames) || {};
+    var langKey = (lang === 'en' || lang === 'pl') ? lang : 'pl';
+    var list = type === 'monster' ? (names.monsters && names.monsters[langKey]) : (names.animals && names.animals[langKey]);
+    if (!list || !list.length) return type === 'monster' ? '?' : '…';
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
   function addDecorationMarkers(style, bounds) {
     var icons = getDecorationIcons(style);
     if (!icons.length || !state.map || !bounds) return;
@@ -82,10 +90,19 @@
     var north = bounds.getNorth();
     var west = bounds.getWest();
     var east = bounds.getEast();
+    var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
     state.decorationMarkers = [];
     icons.forEach(function (item, i) {
       var char = item.char || item;
       var type = item.type || 'monster';
+      var name;
+      if (type === 'carrot') {
+        name = t('carrot_name');
+      } else if (type === 'monster') {
+        name = pickRandomName('monster', lang);
+      } else {
+        name = pickRandomName('animal', lang);
+      }
       var lat = south + Math.random() * (north - south);
       var lng = west + Math.random() * (east - west);
       var icon = L.divIcon({
@@ -98,6 +115,8 @@
       marker._decorationChar = char;
       marker._decorationIndex = i;
       marker._decorationType = type;
+      marker._decorationName = name;
+      marker.bindTooltip(name, { permanent: false });
       state.decorationMarkers.push(marker);
     });
   }
@@ -112,10 +131,11 @@
       var dist = haversine(lat, lng, pos.lat, pos.lng);
       if (dist > radius) return;
       state.metDecorationIndices[i] = true;
-      var t = m._decorationType || 'monster';
-      if (t === 'monster') state.stats.monstersMet += 1;
-      else if (t === 'carrot') state.stats.carrotsCollected += 1;
-      else if (t === 'animal') state.stats.animalsMet += 1;
+      var type = m._decorationType || 'monster';
+      if (type === 'monster') state.stats.monstersMet += 1;
+      else if (type === 'carrot') state.stats.carrotsCollected += 1;
+      else if (type === 'animal') state.stats.animalsMet += 1;
+      if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
     });
   }
 

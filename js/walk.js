@@ -389,25 +389,59 @@
     var listEl = document.getElementById('stats-list');
     var overlay = document.getElementById('stats-overlay');
     if (!listEl || !overlay) return;
-    var places = state.visitedMarkers ? state.visitedMarkers.length : 0;
+    var ro = document.getElementById('reveal-overlay');
+    var ao = document.getElementById('arrival-overlay');
+    if (ro) {
+      ro.classList.add('hidden');
+      ro.style.display = 'none';
+      ro.style.visibility = 'hidden';
+    }
+    if (ao) {
+      ao.classList.add('hidden');
+      ao.style.display = 'none';
+      ao.style.visibility = 'hidden';
+    }
+    var placesCount = state.visitedMarkers ? state.visitedMarkers.length : 0;
     var stats = state.stats || { monstersMet: 0, carrotsCollected: 0, animalsMet: 0 };
     var style = state.mapStyle || 'adventure';
     listEl.innerHTML = '';
-    function addRow(label, value) {
+    function addStatRow(icon, label, value) {
       var li = document.createElement('li');
       li.className = 'stats-row';
-      li.innerHTML = '<span class="stats-label">' + label + '</span><span class="stats-value">' + value + '</span>';
+      li.innerHTML = '<span class="stats-row-icon">' + icon + '</span><span class="stats-label">' + label + '</span><span class="stats-value">' + value + '</span>';
       listEl.appendChild(li);
     }
-    addRow(t('stats_places'), places);
-    if (style === 'adventure') addRow(t('stats_monsters'), stats.monstersMet);
+    var summaryTitle = document.createElement('h3');
+    summaryTitle.className = 'stats-section-title';
+    summaryTitle.textContent = t('stats_summary');
+    listEl.appendChild(summaryTitle);
+    addStatRow('📍', t('stats_places'), placesCount);
+    if (style === 'adventure') addStatRow('👹', t('stats_monsters'), stats.monstersMet);
     if (style === 'cute') {
-      addRow(t('stats_carrots'), stats.carrotsCollected);
-      addRow(t('stats_animals'), stats.animalsMet);
+      addStatRow('🥕', t('stats_carrots'), stats.carrotsCollected);
+      addStatRow('🐾', t('stats_animals'), stats.animalsMet);
+    }
+    if (state.visitedMarkers && state.visitedMarkers.length > 0) {
+      var listTitle = document.createElement('h3');
+      listTitle.className = 'stats-section-title stats-section-title-list';
+      listTitle.textContent = t('stats_discovered_list');
+      listEl.appendChild(listTitle);
+      var placesList = document.createElement('ul');
+      placesList.className = 'stats-places-list';
+      state.visitedMarkers.forEach(function (m) {
+        var name = (m._placeName != null) ? m._placeName : '';
+        if (!name) return;
+        var item = document.createElement('li');
+        item.className = 'stats-place-item';
+        item.innerHTML = '<span class="stats-place-icon">✨</span><span class="stats-place-name">' + escapeHtml(name) + '</span>';
+        placesList.appendChild(item);
+      });
+      listEl.appendChild(placesList);
     }
     overlay.classList.remove('hidden');
     overlay.style.display = 'flex';
     overlay.style.visibility = 'visible';
+    overlay.style.zIndex = '100000';
   }
 
   Sp.setStatus = setStatus;

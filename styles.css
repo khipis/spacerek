@@ -1075,30 +1075,99 @@ body[data-theme="cute"] .exp-tier-legendary {
 .stats-panel .stats-list {
   list-style: none;
   padding: 0;
-  margin: 1rem 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.stats-panel .stats-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 1rem 0 0.5rem 0;
+  padding: 0;
+}
+
+.stats-panel .stats-section-title:first-child {
+  margin-top: 0;
+}
+
+.stats-panel .stats-section-title-list {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .stats-panel .stats-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 10px 14px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+}
+
+.stats-panel .stats-row-icon {
+  font-size: 1.25rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .stats-panel .stats-label {
   color: var(--text-muted);
   font-size: 0.95rem;
+  flex: 1;
 }
 
 .stats-panel .stats-value {
   font-weight: 700;
   color: var(--accent);
   font-size: 1.1rem;
+}
+
+.stats-panel .stats-places-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.stats-panel .stats-place-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.stats-panel .stats-place-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.stats-panel .stats-place-name {
+  color: var(--text);
+  font-weight: 500;
+  word-break: break-word;
 }
 
 /* ========== ARRIVAL & REVEAL ========== */

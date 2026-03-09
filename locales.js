@@ -94,11 +94,14 @@
 
       // Walk statistics
       stats_title: '📊 Statystyki spaceru',
+      stats_summary: 'Podsumowanie',
       stats_places: 'Odwiedzone miejsca',
       stats_monsters: 'Spotkane potwory',
       stats_carrots: 'Zebrane marchewki',
       stats_animals: 'Spotkane zwierzątka',
-      stats_btn_finish: 'Zakończ'
+      stats_discovered_list: 'Odkryte miejsca',
+      stats_btn_finish: 'Zakończ',
+      carrot_name: 'Marchewka'
     },
 
     en: {
@@ -177,11 +180,14 @@
       simulate_distance: 'Distance to goal: {m} m (simulation…)',
 
       stats_title: '📊 Walk statistics',
+      stats_summary: 'Summary',
       stats_places: 'Places visited',
       stats_monsters: 'Monsters met',
       stats_carrots: 'Carrots collected',
       stats_animals: 'Animals met',
-      stats_btn_finish: 'Finish'
+      stats_discovered_list: 'Places discovered',
+      stats_btn_finish: 'Finish',
+      carrot_name: 'Carrot'
     }
   };
 
