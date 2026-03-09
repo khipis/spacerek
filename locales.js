@@ -79,6 +79,7 @@
       chest_xp_label: 'Skarb',
       chest_wound_label: 'Rana',
       chest_artifact_unknown: 'Nieznany artefakt',
+      chest_artifact_ultralegendary: 'Ultralegendarny!',
       chest_result_btn_close: 'OK',
 
       // Experience panel
@@ -201,6 +202,7 @@
       chest_xp_label: 'Treasure',
       chest_wound_label: 'Wound',
       chest_artifact_unknown: 'Unknown artifact',
+      chest_artifact_ultralegendary: 'Ultralegendary!',
       chest_result_btn_close: 'OK',
 
       experience_title: '🏆 Your experience',

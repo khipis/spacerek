@@ -209,10 +209,11 @@
     }
   }
 
-  function showChestResultToast(outcome, data) {
+  function showChestResultToast(outcome, data, ultralegendary) {
     if (!Sp.showToast) return;
     if (outcome === 'artifact') {
-      Sp.showToast('🏺 ' + t('chest_result_artifact_title') + ' ' + (data || t('chest_artifact_unknown')));
+      var prefix = ultralegendary ? '🌟 ' + t('chest_artifact_ultralegendary') + ' ' : '🏺 ' + t('chest_result_artifact_title') + ' ';
+      Sp.showToast(prefix + (data || t('chest_artifact_unknown')));
     } else if (outcome === 'xp') {
       var xp = data != null ? data : 15;
       Sp.showToast('✨ ' + t('chest_result_xp_title') + ' +' + xp + ' XP');
@@ -228,11 +229,15 @@
     var saveDecorationEntry = Sp.saveDecorationEntry;
     if (roll === 1) {
       var names = (window.Spacerek && window.Spacerek.decorationNames) || {};
-      var list = names.artifacts && names.artifacts[langKey];
+      var ulChance = (config && config.ARTIFACT_ULTRALEGENDARY_CHANCE) != null ? config.ARTIFACT_ULTRALEGENDARY_CHANCE : 0.05;
+      var ulXp = (config && config.ARTIFACT_ULTRALEGENDARY_XP) != null ? config.ARTIFACT_ULTRALEGENDARY_XP : 50;
+      var isUltralegendary = names.artifactsUltralegendary && names.artifactsUltralegendary[langKey] && names.artifactsUltralegendary[langKey].length && Math.random() < ulChance;
+      var list = isUltralegendary ? (names.artifactsUltralegendary && names.artifactsUltralegendary[langKey]) : (names.artifacts && names.artifacts[langKey]);
       var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : t('chest_artifact_unknown');
+      var xp = isUltralegendary ? ulXp : 15;
       state.artifactsFound.push(artifactName);
-      if (saveDecorationEntry) saveDecorationEntry('artifact', artifactName, 15);
-      showChestResultToast('artifact', artifactName);
+      if (saveDecorationEntry) saveDecorationEntry('artifact', artifactName, xp);
+      showChestResultToast('artifact', artifactName, isUltralegendary);
     } else if (roll === 2) {
       var xp = 15;
       if (saveDecorationEntry) saveDecorationEntry('chest_xp', t('chest_xp_label'), xp);
