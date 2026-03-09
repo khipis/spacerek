@@ -21,14 +21,19 @@
     debugFoundPlaces: [],
     debugChosenIndex: -1,
     mapStyle: 'adventure',
-    stats: { monstersMet: 0, carrotsCollected: 0, animalsMet: 0 },
+    stats: { monstersMet: 0, carrotsCollected: 0, animalsMet: 0, npcsMet: 0 },
     metDecorationIndices: {},
     metMonsterNames: [],
     metAnimalNames: [],
     metCarrotNames: [],
+    metNpcNames: [],
     selectedDecorationIndex: null,
     artifactsFound: [],
-    wounds: 0
+    wounds: 0,
+    pendingMonsterIndex: null,
+    pendingMonsterMarker: null,
+    pendingNpcIndex: null,
+    pendingNpcMarker: null
   };
 
   function $(id) {

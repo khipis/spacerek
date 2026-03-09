@@ -99,7 +99,7 @@
   function getUniqueNames(type, lang, count) {
     var names = (window.Spacerek && window.Spacerek.decorationNames) || {};
     var langKey = (lang === 'en' || lang === 'pl') ? lang : 'pl';
-    var list = type === 'monster' ? (names.monsters && names.monsters[langKey]) : (names.animals && names.animals[langKey]);
+    var list = type === 'monster' ? (names.monsters && names.monsters[langKey]) : (type === 'npc' ? (names.npcs && names.npcs[langKey]) : (names.animals && names.animals[langKey]));
     if (!list || !list.length) return [];
     return shuffleArray(list).slice(0, Math.min(count, list.length));
   }
@@ -116,10 +116,13 @@
     state.decorationMarkers = [];
     var monsterCount = icons.filter(function (item) { return (item.type || 'monster') === 'monster'; }).length;
     var animalCount = icons.filter(function (item) { return (item.type || '') === 'animal'; }).length;
+    var npcCount = icons.filter(function (item) { return (item.type || '') === 'npc'; }).length;
     var monsterNames = getUniqueNames('monster', lang, monsterCount);
     var animalNames = getUniqueNames('animal', lang, animalCount);
+    var npcNames = getUniqueNames('npc', lang, npcCount);
     var monsterIdx = 0;
     var animalIdx = 0;
+    var npcIdx = 0;
     icons.forEach(function (item, i) {
       var char = item.char || item;
       var type = item.type || 'monster';
@@ -130,6 +133,8 @@
         name = monsterNames[monsterIdx++] || '?';
       } else if (type === 'chest') {
         name = t('chest_tooltip');
+      } else if (type === 'npc') {
+        name = npcNames[npcIdx++] || '…';
       } else {
         name = animalNames[animalIdx++] || '…';
       }
@@ -146,6 +151,12 @@
       marker._decorationIndex = i;
       marker._decorationType = type;
       marker._decorationName = name;
+      if (type === 'monster') {
+        marker._monsterLevel = 1 + Math.floor(Math.random() * 3);
+        marker._monsterStr = 2 + Math.floor(Math.random() * 7);
+        marker._monsterDex = 2 + Math.floor(Math.random() * 7);
+        marker._monsterXp = 5 + marker._monsterLevel * 5;
+      }
       marker.bindTooltip(name, { permanent: false });
       marker.on('click', function () {
         state.selectedDecorationIndex = i;
@@ -209,6 +220,96 @@
     }
   }
 
+  function showMonsterEncounter(index, marker) {
+    state.pendingMonsterIndex = index;
+    state.pendingMonsterMarker = marker;
+    var name = marker._decorationName || '?';
+    var level = marker._monsterLevel != null ? marker._monsterLevel : 1;
+    var str = marker._monsterStr != null ? marker._monsterStr : 5;
+    var dex = marker._monsterDex != null ? marker._monsterDex : 5;
+    var xp = marker._monsterXp != null ? marker._monsterXp : 10;
+    var elName = document.getElementById('monster-encounter-name');
+    var elLevel = document.getElementById('monster-encounter-level');
+    var elStr = document.getElementById('monster-encounter-str');
+    var elDex = document.getElementById('monster-encounter-dex');
+    var elXp = document.getElementById('monster-encounter-xp');
+    var overlay = document.getElementById('monster-encounter-overlay');
+    if (elName) elName.textContent = name;
+    if (elLevel) elLevel.textContent = level;
+    if (elStr) elStr.textContent = str;
+    if (elDex) elDex.textContent = dex;
+    if (elXp) elXp.textContent = '+' + xp;
+    if (overlay) {
+      overlay.classList.remove('hidden');
+      overlay.style.display = 'flex';
+      overlay.style.visibility = 'visible';
+      overlay.style.zIndex = '100001';
+    }
+  }
+
+  function finishMonsterEncounter(choice) {
+    var index = state.pendingMonsterIndex;
+    var marker = state.pendingMonsterMarker;
+    state.pendingMonsterIndex = null;
+    state.pendingMonsterMarker = null;
+    var overlay = document.getElementById('monster-encounter-overlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+    if (index == null || !marker) return;
+    if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);
+    var name = marker._decorationName || '?';
+    var xp = marker._monsterXp != null ? marker._monsterXp : 10;
+    if (choice === 'fight') {
+      state.metMonsterNames.push(name);
+      if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('monster', name, xp);
+      if (Sp.showToast) Sp.showToast(t('monster_fight_won', { xp: xp }));
+      if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
+    }
+  }
+
+  var NPC_DIALOGUES_PL = ['Witaj, wędrowcze. Miłego spaceru!', 'Nie bój się, to ja. Uważaj na potwory.', 'Marchewka? Nie, nie mam. Szukaj dalej.'];
+  var NPC_DIALOGUES_EN = ['Hello, traveller. Have a nice walk!', "Don't be afraid, it's me. Watch out for monsters.", "A carrot? I don't have any. Keep looking."];
+
+  function showNpcEncounter(index, marker) {
+    state.pendingNpcIndex = index;
+    state.pendingNpcMarker = marker;
+    var name = marker._decorationName || '?';
+    var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
+    var dialogues = lang === 'en' ? NPC_DIALOGUES_EN : NPC_DIALOGUES_PL;
+    var dialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
+    var elTitle = document.getElementById('npc-encounter-title');
+    var elDialogue = document.getElementById('npc-encounter-dialogue');
+    var overlay = document.getElementById('npc-encounter-overlay');
+    if (elTitle) elTitle.textContent = name;
+    if (elDialogue) elDialogue.textContent = dialogue;
+    if (overlay) {
+      overlay.classList.remove('hidden');
+      overlay.style.display = 'flex';
+      overlay.style.visibility = 'visible';
+      overlay.style.zIndex = '100001';
+    }
+  }
+
+  function finishNpcEncounter() {
+    var index = state.pendingNpcIndex;
+    var marker = state.pendingNpcMarker;
+    state.pendingNpcIndex = null;
+    state.pendingNpcMarker = null;
+    var overlay = document.getElementById('npc-encounter-overlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
+    if (index == null || !marker) return;
+    if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);
+    var name = marker._decorationName || '?';
+    state.metNpcNames.push(name);
+    if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc', name, 5);
+    if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
+  }
+
   function showChestResultToast(outcome, data, ultralegendary) {
     if (!Sp.showToast) return;
     if (outcome === 'artifact') {
@@ -269,9 +370,18 @@
         return;
       }
       if (type === 'monster') {
+        state.metDecorationIndices[i] = true;
         state.stats.monstersMet += 1;
-        state.metMonsterNames.push(name);
-      } else if (type === 'carrot') {
+        showMonsterEncounter(i, m);
+        return;
+      }
+      if (type === 'npc') {
+        state.metDecorationIndices[i] = true;
+        state.stats.npcsMet += 1;
+        showNpcEncounter(i, m);
+        return;
+      }
+      if (type === 'carrot') {
         state.stats.carrotsCollected += 1;
         state.metCarrotNames.push(name);
         var spoiledChance = (config && config.CARROT_SPOILED_CHANCE) != null ? config.CARROT_SPOILED_CHANCE : 0.12;
@@ -288,6 +398,15 @@
       } else if (type === 'animal') {
         state.stats.animalsMet += 1;
         state.metAnimalNames.push(name);
+        if (typeof window.generateAnimalQuest === 'function') {
+          var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
+          var langKey = (lang === 'en' || lang === 'pl') ? lang : 'pl';
+          window.generateAnimalQuest(name || '', langKey).then(function (questText) {
+            if (questText && Sp.showToast) Sp.showToast('🐾 ' + questText);
+          }).catch(function () {
+            if (Sp.showToast) Sp.showToast('🐾 ' + (name || '') + (langKey === 'pl' ? ' mówi: Cześć!' : ' says: Hi!'));
+          });
+        }
       }
       if (saveDecorationEntry) saveDecorationEntry(type, name);
       if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
@@ -308,13 +427,18 @@
     state.visitedMarkers = [];
     clearDecorationMarkers();
     state.selectedDecorationIndex = null;
-    state.stats = { monstersMet: 0, carrotsCollected: 0, animalsMet: 0 };
+    state.stats = { monstersMet: 0, carrotsCollected: 0, animalsMet: 0, npcsMet: 0 };
     state.metDecorationIndices = {};
     state.metMonsterNames = [];
     state.metAnimalNames = [];
     state.metCarrotNames = [];
+    state.metNpcNames = [];
     state.artifactsFound = [];
     state.wounds = 0;
+    state.pendingMonsterIndex = null;
+    state.pendingMonsterMarker = null;
+    state.pendingNpcIndex = null;
+    state.pendingNpcMarker = null;
 
     var style = state.mapStyle || 'adventure';
     var attractionChar = getStyleIcons(style).attraction || '?';
@@ -380,4 +504,6 @@
   Sp.goToDecoration = goToDecoration;
   Sp.clearDecorationSelection = clearDecorationSelection;
   Sp.updateDecorationSelectionVisual = updateDecorationSelectionVisual;
+  Sp.finishMonsterEncounter = finishMonsterEncounter;
+  Sp.finishNpcEncounter = finishNpcEncounter;
 })();

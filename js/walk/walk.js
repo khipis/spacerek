@@ -352,8 +352,12 @@
     state.decorationMarkers = [];
     var ro = document.getElementById('reveal-overlay');
     var ao = document.getElementById('arrival-overlay');
+    var mo = document.getElementById('monster-encounter-overlay');
+    var no = document.getElementById('npc-encounter-overlay');
     if (ro) { ro.classList.add('hidden'); ro.style.display = 'none'; ro.style.visibility = 'hidden'; }
     if (ao) { ao.classList.add('hidden'); ao.style.display = 'none'; ao.style.visibility = 'hidden'; }
+    if (mo) { mo.classList.add('hidden'); mo.style.display = 'none'; }
+    if (no) { no.classList.add('hidden'); no.style.display = 'none'; }
     show($('loading-place'), false);
     show($('walking-info'), false);
     show($('map-style-bar'), false);
@@ -490,6 +494,9 @@
     if (style === 'adventure') {
       addStatRow('👹', t('stats_monsters'), monstersMet);
       addNamesList(state.metMonsterNames || [], 'stats-names-list');
+      var npcsMet = (state.stats && state.stats.npcsMet != null) ? state.stats.npcsMet : (state.metNpcNames || []).length;
+      addStatRow('👤', t('stats_npcs'), npcsMet);
+      addNamesList(state.metNpcNames || [], 'stats-names-list');
       addStatRow('🏺', t('stats_artifacts'), (state.artifactsFound && state.artifactsFound.length) || 0);
       addNamesList(state.artifactsFound || [], 'stats-names-list');
       addStatRow('🩹', t('stats_wounds'), state.wounds || 0);

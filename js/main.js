@@ -342,6 +342,20 @@
       });
     }
 
+    var btnMonsterRun = $('btn-monster-run');
+    var btnMonsterFight = $('btn-monster-fight');
+    if (btnMonsterRun) btnMonsterRun.addEventListener('click', function () {
+      if (typeof Sp.finishMonsterEncounter === 'function') Sp.finishMonsterEncounter('run');
+    });
+    if (btnMonsterFight) btnMonsterFight.addEventListener('click', function () {
+      if (typeof Sp.finishMonsterEncounter === 'function') Sp.finishMonsterEncounter('fight');
+    });
+
+    var btnNpcOk = $('btn-npc-ok');
+    if (btnNpcOk) btnNpcOk.addEventListener('click', function () {
+      if (typeof Sp.finishNpcEncounter === 'function') Sp.finishNpcEncounter();
+    });
+
     var btnStatsClose = $('btn-stats-close');
     var btnStatsFinish = $('btn-stats-finish');
     if (btnStatsClose) btnStatsClose.addEventListener('click', closeStatsAndReset);

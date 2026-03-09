@@ -1543,6 +1543,96 @@ body[data-theme="cute"] .exp-tier-legendary {
   margin-bottom: 16px;
 }
 
+/* Monster / NPC encounter overlays */
+.encounter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--overlay-bg);
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  pointer-events: auto;
+}
+
+.encounter-overlay.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.encounter-overlay:not(.hidden) {
+  display: flex !important;
+  visibility: visible !important;
+  animation: arrivalFadeIn 0.3s ease;
+}
+
+.encounter-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.encounter-name {
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.monster-stats-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  text-align: left;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.monster-stats-dl dt {
+  color: var(--text-muted);
+}
+
+.monster-stats-dl dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.encounter-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-secondary {
+  background: var(--text-muted);
+  color: var(--bg);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  filter: brightness(1.1);
+}
+
+.npc-dialogue {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
 .reveal-overlay {
   position: fixed;
   top: 0;

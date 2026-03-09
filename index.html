@@ -124,6 +124,32 @@
           <button type="button" id="btn-chest-result-close" class="btn-primary" data-i18n="chest_result_btn_close">OK</button>
         </div>
       </div>
+      <div id="monster-encounter-overlay" class="encounter-overlay hidden" data-display="flex">
+        <div class="encounter-card monster-encounter-card">
+          <h3 id="monster-encounter-name" class="encounter-name"></h3>
+          <dl class="monster-stats-dl">
+            <dt data-i18n="monster_level">Poziom</dt>
+            <dd id="monster-encounter-level"></dd>
+            <dt data-i18n="monster_strength">Siła</dt>
+            <dd id="monster-encounter-str"></dd>
+            <dt data-i18n="monster_dexterity">Zręczność</dt>
+            <dd id="monster-encounter-dex"></dd>
+            <dt data-i18n="monster_xp_reward">Nagroda XP</dt>
+            <dd id="monster-encounter-xp"></dd>
+          </dl>
+          <div class="encounter-actions">
+            <button type="button" id="btn-monster-run" class="btn-secondary" data-i18n="monster_btn_run">Uciekaj</button>
+            <button type="button" id="btn-monster-fight" class="btn-primary" data-i18n="monster_btn_fight">Walcz</button>
+          </div>
+        </div>
+      </div>
+      <div id="npc-encounter-overlay" class="encounter-overlay hidden" data-display="flex">
+        <div class="encounter-card npc-encounter-card">
+          <h3 id="npc-encounter-title" class="encounter-name" data-i18n="npc_encounter_title">Spotkanie</h3>
+          <p id="npc-encounter-dialogue" class="npc-dialogue"></p>
+          <button type="button" id="btn-npc-ok" class="btn-primary" data-i18n="npc_btn_ok">OK</button>
+        </div>
+      </div>
     </section>
 
     <!-- Walk statistics at end -->
@@ -171,6 +197,7 @@
   <script src="js/data/monster-names.js"></script>
   <script src="js/data/animal-names.js"></script>
   <script src="js/data/artifact-names.js"></script>
+  <script src="js/data/npc-names.js"></script>
   <!-- storage -->
   <script src="js/storage/storage.js"></script>
   <!-- ui: experience (XP panel), locale -->
@@ -182,6 +209,8 @@
   <!-- services: Overpass, Wikipedia -->
   <script src="js/services/places.js"></script>
   <script src="js/services/wiki.js"></script>
+  <!-- optional: local LLM for animal quest lines (~85MB, loads on first use) -->
+  <script type="module" src="js/llm/animal-quest.js"></script>
   <!-- walk: simulate, walk flow -->
   <script src="js/walk/simulate.js"></script>
   <script src="js/walk/walk.js"></script>

@@ -82,6 +82,22 @@
       chest_artifact_ultralegendary: 'Ultralegendarny!',
       chest_result_btn_close: 'OK',
 
+      // Monster encounter (Adventure)
+      monster_encounter_title: 'Spotkanie z potworem!',
+      monster_level: 'Poziom',
+      monster_strength: 'Siła',
+      monster_dexterity: 'Zręczność',
+      monster_xp_reward: 'Nagroda XP',
+      monster_btn_run: 'Uciekaj',
+      monster_btn_fight: 'Walcz',
+      monster_fight_won: 'Pokonałeś potwora! +{xp} XP',
+
+      // NPC encounter (Adventure)
+      npc_encounter_title: 'Spotkanie',
+      npc_says: '{name} mówi',
+      npc_dialogue: 'Witaj, wędrowcze. Miłego spaceru!',
+      npc_btn_ok: 'OK',
+
       // Experience panel
       experience_title: '🏆 Twoje doświadczenie',
       experience_mode_prefix: 'Tryb: ',
@@ -127,6 +143,7 @@
       stats_summary: 'Podsumowanie',
       stats_places: 'Odwiedzone miejsca',
       stats_monsters: 'Spotkane potwory',
+      stats_npcs: 'Spotkani NPC',
       stats_artifacts: 'Artefakty',
       stats_wounds: 'Rany',
       stats_carrots: 'Zebrane marchewki',
@@ -205,6 +222,20 @@
       chest_artifact_ultralegendary: 'Ultralegendary!',
       chest_result_btn_close: 'OK',
 
+      monster_encounter_title: 'Monster encounter!',
+      monster_level: 'Level',
+      monster_strength: 'Strength',
+      monster_dexterity: 'Dexterity',
+      monster_xp_reward: 'XP reward',
+      monster_btn_run: 'Run away',
+      monster_btn_fight: 'Fight',
+      monster_fight_won: 'You defeated the monster! +{xp} XP',
+
+      npc_encounter_title: 'Encounter',
+      npc_says: '{name} says',
+      npc_dialogue: 'Hello, traveller. Have a nice walk!',
+      npc_btn_ok: 'OK',
+
       experience_title: '🏆 Your experience',
       experience_mode_prefix: 'Mode: ',
       experience_btn_close_title: 'Close',
@@ -245,6 +276,7 @@
       stats_summary: 'Summary',
       stats_places: 'Places visited',
       stats_monsters: 'Monsters met',
+      stats_npcs: 'NPCs met',
       stats_artifacts: 'Artifacts',
       stats_wounds: 'Wounds',
       stats_carrots: 'Carrots collected',

@@ -61,8 +61,8 @@
     listEl.innerHTML = '';
     list.slice().reverse().forEach(function (entry) {
       var li = document.createElement('li');
-      if (entry.type === 'carrot' || entry.type === 'spoiled_carrot' || entry.type === 'monster' || entry.type === 'animal') {
-        var icon = (entry.type === 'carrot' || entry.type === 'spoiled_carrot') ? '🥕' : (entry.type === 'monster' ? '👹' : '🐾');
+      if (entry.type === 'carrot' || entry.type === 'spoiled_carrot' || entry.type === 'monster' || entry.type === 'animal' || entry.type === 'npc') {
+        var icon = (entry.type === 'carrot' || entry.type === 'spoiled_carrot') ? '🥕' : (entry.type === 'monster' ? '👹' : (entry.type === 'npc' ? '👤' : '🐾'));
         var isSpoiled = entry.type === 'spoiled_carrot';
         var xpVal = entry.xp != null ? entry.xp : 0;
         li.className = 'exp-entry exp-entry-decoration' + (isSpoiled ? ' exp-entry-spoiled' : '');
