@@ -1686,6 +1686,17 @@ body[data-theme="cute"] .exp-tier-legendary {
   min-height: 80px;
 }
 
+.minigame-instruction {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.2);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 14px;
+  text-align: left;
+  line-height: 1.4;
+}
+
 .minigame-round {
   font-size: 0.9rem;
   color: var(--text-muted);
@@ -1801,6 +1812,28 @@ body[data-theme="cute"] .exp-tier-legendary {
 @keyframes minigame-signal-flash {
   from { opacity: 0; transform: scale(0.5); }
   to { opacity: 1; transform: scale(1); }
+}
+
+.minigame-tap-button {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 20px 40px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--accent);
+  color: var(--bg);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.minigame-tap-button:hover {
+  transform: scale(1.03);
+}
+
+.minigame-tap-button:active {
+  transform: scale(0.98);
 }
 
 .reveal-overlay {

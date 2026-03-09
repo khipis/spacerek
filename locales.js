@@ -108,6 +108,13 @@
       minigame_too_early: 'Za wcześnie!',
       minigame_too_late: 'Za późno!',
       minigame_hit: 'Trafienie!',
+      minigame_instruction_rps: 'Potwór zasygnalizuje atak (Uderzenie / Unik / Czar). Wybierz KONTRĘ w czasie: Uderzenie bije Czar, Czar bije Unik, Unik bije Uderzenie. Wygrywasz 2 z 3 rund.',
+      minigame_instruction_timing: 'Ruchomy pasek jeździ w lewo i prawo. Kliknij w ramkę, gdy pasek (kolorowy) jest w zielonej strefie. Potrzebujesz 2 trafień z 3 prób.',
+      minigame_instruction_dodge: 'Nie klikaj za wcześnie! Poczekaj na napis „UNIK!”, potem kliknij lub naciśnij dowolny klawisz w ciągu pół sekundy. 2 sukcesy z 3 prób.',
+      minigame_instruction_tap: 'Klikaj przycisk „Klikaj!” jak najszybciej przez 3 sekundy. Potrzebujesz co najmniej {n} kliknięć, żeby wygrać.',
+      minigame_tap_btn: 'Klikaj!',
+      minigame_tap_count: 'Kliknięcia: {n}',
+      minigame_tap_go: 'Start!',
 
       // NPC encounter (Adventure)
       npc_encounter_title: 'Spotkanie',
@@ -263,6 +270,13 @@
       minigame_too_early: 'Too early!',
       minigame_too_late: 'Too late!',
       minigame_hit: 'Hit!',
+      minigame_instruction_rps: 'The monster will telegraph an attack (Strike / Dodge / Spell). Choose the COUNTER in time: Strike beats Spell, Spell beats Dodge, Dodge beats Strike. Win 2 of 3 rounds.',
+      minigame_instruction_timing: 'The slider moves left and right. Click the box when the coloured slider is inside the green zone. You need 2 hits out of 3 attempts.',
+      minigame_instruction_dodge: "Don't click too early! Wait for the \"DODGE!\" text, then click or press any key within half a second. 2 successes out of 3 attempts.",
+      minigame_instruction_tap: 'Click the "Tap!" button as fast as you can for 3 seconds. You need at least {n} clicks to win.',
+      minigame_tap_btn: 'Tap!',
+      minigame_tap_count: 'Clicks: {n}',
+      minigame_tap_go: 'Go!',
 
       npc_encounter_title: 'Encounter',
       npc_says: '{name} says',

@@ -57,6 +57,7 @@
       var roundDone = false;
 
       setContent(
+        '<p class="minigame-instruction">' + t('minigame_instruction_rps') + '</p>' +
         '<p class="minigame-round">' + t('minigame_round', { n: roundNum }) + '</p>' +
         '<p class="minigame-wait-prompt">' + t('minigame_telegraph') + '</p>' +
         '<div class="minigame-timer-bar"><div id="minigame-rps-timer" class="minigame-timer-fill"></div></div>' +
@@ -144,8 +145,8 @@
       var start = Date.now();
 
       setContent(
-        '<p class="minigame-round">' + t('minigame_timing_click') + '</p>' +
-        '<p class="minigame-wait-prompt">' + (attempts) + '/' + maxAttempts + '</p>' +
+        '<p class="minigame-instruction">' + t('minigame_instruction_timing') + '</p>' +
+        '<p class="minigame-round">' + (attempts) + '/' + maxAttempts + '</p>' +
         '<div id="minigame-timing-wrap" class="minigame-timing-bar-wrap">' +
         '<div class="minigame-timing-zone" style="left:' + zoneLeft + '%; width:' + zoneWidth + '%;"></div>' +
         '<div id="minigame-timing-slider" class="minigame-timing-slider" style="left:0%;"></div>' +
@@ -210,6 +211,7 @@
     function attempt() {
       attempts += 1;
       setContent(
+        '<p class="minigame-instruction">' + t('minigame_instruction_dodge') + '</p>' +
         '<p class="minigame-round">' + attempts + '/' + maxAttempts + '</p>' +
         '<p id="minigame-dodge-prompt" class="minigame-wait-prompt">' + t('minigame_wait_signal') + '</p>' +
         '<p id="minigame-dodge-signal" class="minigame-dodge-signal" style="display:none;">' + t('minigame_dodge_now') + '</p>'
@@ -266,7 +268,54 @@
     attempt();
   }
 
-  var GAMES = [runReflexRPS, runTimingHit, runDodgeSignal];
+  // —— Game 4: Rapid tap (click as fast as possible for 3 seconds) ——
+  var TAP_REQUIRED = 14;
+
+  function runRapidTap(done) {
+    var count = 0;
+    var started = false;
+    var endTime = 0;
+
+    setContent(
+      '<p class="minigame-instruction">' + t('minigame_instruction_tap', { n: TAP_REQUIRED }) + '</p>' +
+      '<p id="minigame-tap-count" class="minigame-wait-prompt">' + t('minigame_tap_count', { n: '0' }) + '</p>' +
+      '<button type="button" id="minigame-tap-btn" class="minigame-tap-button">' + t('minigame_tap_go') + '</button>'
+    );
+
+    var countEl = getEl('minigame-tap-count');
+    var btn = getEl('minigame-tap-btn');
+
+    function onTap() {
+      if (!started) {
+        started = true;
+        if (btn) btn.textContent = t('minigame_tap_btn');
+        endTime = Date.now() + 3000;
+        var tick = setInterval(function () {
+          if (Date.now() >= endTime) {
+            clearInterval(tick);
+            var won = count >= TAP_REQUIRED;
+            setContent(
+              '<p class="minigame-instruction">' + t('minigame_instruction_tap', { n: TAP_REQUIRED }) + '</p>' +
+              '<p class="minigame-result ' + (won ? 'win' : 'lose') + '">' + (won ? t('minigame_win') : t('minigame_lose')) + '</p>' +
+              '<p class="minigame-wait-prompt">' + t('minigame_tap_count', { n: count }) + ' / ' + TAP_REQUIRED + '</p>'
+            );
+            setTimeout(function () { done(won); }, 1400);
+            return;
+          }
+          if (countEl) countEl.textContent = t('minigame_tap_count', { n: count });
+        }, 100);
+        return;
+      }
+      count += 1;
+      if (countEl) countEl.textContent = t('minigame_tap_count', { n: count });
+    }
+
+    if (btn) {
+      btn.addEventListener('click', onTap);
+    }
+  }
+
+  var GAMES = [runReflexRPS, runTimingHit, runDodgeSignal, runRapidTap];
 
   function startMinigame(monsterChar, onWin, onLose) {
     showOverlay(monsterChar);
