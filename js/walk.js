@@ -317,6 +317,16 @@
     });
     state.visitedMarkers = [];
     if (Sp.clearDecorationMarkers) Sp.clearDecorationMarkers();
+    if (state.map) {
+      try {
+        state.map.remove();
+      } catch (e) {}
+      state.map = null;
+      state.userMarker = null;
+    }
+    state.targetMarkers = [];
+    state.visitedMarkers = [];
+    state.decorationMarkers = [];
     var ro = document.getElementById('reveal-overlay');
     var ao = document.getElementById('arrival-overlay');
     if (ro) { ro.classList.add('hidden'); ro.style.display = 'none'; ro.style.visibility = 'hidden'; }
@@ -346,6 +356,11 @@
   }
 
   function startWalk() {
+    var selectedStyleBtn = document.querySelector('.btn-map-style.selected');
+    if (selectedStyleBtn) {
+      state.mapStyle = selectedStyleBtn.getAttribute('data-style') || state.mapStyle;
+      if (typeof Sp.setStoredTheme === 'function') Sp.setStoredTheme(state.mapStyle);
+    }
     setStatus(t('status_getting_location'), '');
     if (!navigator.geolocation) {
       setStatus(t('status_no_geolocation'), '');

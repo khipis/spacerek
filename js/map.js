@@ -43,6 +43,13 @@
     if (!center) return;
 
     var L = window.L;
+    if (state.map) {
+      try {
+        state.map.remove();
+      } catch (e) {}
+      state.map = null;
+      state.userMarker = null;
+    }
     state.map = L.map('map-container').setView([center.lat, center.lng], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

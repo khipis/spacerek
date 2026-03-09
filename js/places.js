@@ -7,6 +7,27 @@
   var state = Sp.state;
   var config = Sp.config;
 
+  var OVERPASS_FETCH_TIMEOUT_MS = 25000;
+
+  function fetchWithTimeout(url, options, timeoutMs) {
+    var timeoutId;
+    var timeoutPromise = new Promise(function (_, reject) {
+      timeoutId = setTimeout(function () {
+        reject(new Error('FETCH_TIMEOUT'));
+      }, timeoutMs);
+    });
+    return Promise.race([
+      fetch(url, options).then(function (response) {
+        clearTimeout(timeoutId);
+        return response;
+      }),
+      timeoutPromise
+    ]).then(function (response) {
+      if (!response || !response.ok) throw new Error(response ? 'Overpass: ' + response.status : 'FETCH_TIMEOUT');
+      return response.json();
+    });
+  }
+
   function fetchPlacesFromOverpass(lat, lng, radiusMeters) {
     var radius = Math.min(Math.round(radiusMeters), 10000);
     var q = [
@@ -28,14 +49,11 @@
       'out body;'
     ].join('');
 
-    return fetch(config.OVERPASS_URL, {
+    return fetchWithTimeout(config.OVERPASS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'data=' + encodeURIComponent(q)
-    }).then(function (response) {
-      if (!response.ok) throw new Error('Overpass: ' + response.status);
-      return response.json();
-    });
+    }, OVERPASS_FETCH_TIMEOUT_MS);
   }
 
   function shuffleArray(arr) {
