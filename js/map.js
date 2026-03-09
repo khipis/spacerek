@@ -128,6 +128,8 @@
         name = t('carrot_name');
       } else if (type === 'monster') {
         name = monsterNames[monsterIdx++] || '?';
+      } else if (type === 'chest') {
+        name = t('chest_tooltip');
       } else {
         name = animalNames[animalIdx++] || '…';
       }
@@ -200,6 +202,57 @@
     updateDecorationSelectionVisual();
   }
 
+  function showChestResult(outcome, data) {
+    var overlay = document.getElementById('chest-result-overlay');
+    var titleEl = document.getElementById('chest-result-title');
+    var bodyEl = document.getElementById('chest-result-body');
+    var iconEl = document.getElementById('chest-result-icon');
+    if (!overlay || !titleEl || !bodyEl) return;
+    if (iconEl) {
+      if (outcome === 'artifact') iconEl.textContent = '🏺';
+      else if (outcome === 'xp') iconEl.textContent = '✨';
+      else iconEl.textContent = '🩹';
+    }
+    if (outcome === 'artifact') {
+      titleEl.textContent = t('chest_result_artifact_title');
+      bodyEl.textContent = (data || '').trim() ? data : t('chest_result_artifact');
+    } else if (outcome === 'xp') {
+      titleEl.textContent = t('chest_result_xp_title');
+      bodyEl.textContent = t('chest_result_xp_body', { xp: data != null ? data : 15 });
+    } else {
+      titleEl.textContent = t('chest_result_wound_title');
+      bodyEl.textContent = t('chest_result_wound_body');
+    }
+    overlay.classList.remove('hidden');
+    overlay.style.display = 'flex';
+    overlay.style.visibility = 'visible';
+    overlay.style.zIndex = '99999';
+  }
+
+  function resolveChest() {
+    var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
+    var langKey = (lang === 'en' || lang === 'pl') ? lang : 'pl';
+    var roll = 1 + Math.floor(Math.random() * 3);
+    var saveDecorationEntry = Sp.saveDecorationEntry;
+    if (roll === 1) {
+      var names = (window.Spacerek && window.Spacerek.decorationNames) || {};
+      var list = names.artifacts && names.artifacts[langKey];
+      var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : t('chest_artifact_unknown');
+      state.artifactsFound.push(artifactName);
+      if (saveDecorationEntry) saveDecorationEntry('artifact', artifactName, 15);
+      showChestResult('artifact', artifactName);
+    } else if (roll === 2) {
+      var xp = 15;
+      if (saveDecorationEntry) saveDecorationEntry('chest_xp', t('chest_xp_label'), xp);
+      showChestResult('xp', xp);
+    } else {
+      state.wounds += 1;
+      if (saveDecorationEntry) saveDecorationEntry('wound', t('chest_wound_label'), 0);
+      showChestResult('wound');
+    }
+    if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
+  }
+
   function checkDecorationProximity(lat, lng) {
     if (!state.decorationMarkers || !state.decorationMarkers.length) return;
     var radius = (config && config.DECORATION_PROXIMITY_METERS) || 35;
@@ -213,12 +266,26 @@
       state.metDecorationIndices[i] = true;
       var type = m._decorationType || 'monster';
       var name = m._decorationName || (type === 'carrot' ? t('carrot_name') : '?');
+      if (type === 'chest') {
+        resolveChest();
+        if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
+        return;
+      }
       if (type === 'monster') {
         state.stats.monstersMet += 1;
         state.metMonsterNames.push(name);
       } else if (type === 'carrot') {
         state.stats.carrotsCollected += 1;
         state.metCarrotNames.push(name);
+        var spoiledChance = (config && config.CARROT_SPOILED_CHANCE) != null ? config.CARROT_SPOILED_CHANCE : 0.12;
+        var spoiledXp = (config && config.CARROT_SPOILED_XP) != null ? config.CARROT_SPOILED_XP : -3;
+        if (Math.random() < spoiledChance) {
+          if (saveDecorationEntry) saveDecorationEntry('spoiled_carrot', name, spoiledXp);
+        } else {
+          if (saveDecorationEntry) saveDecorationEntry(type, name);
+        }
+        if (state.map && state.map.hasLayer(m)) state.map.removeLayer(m);
+        return;
       } else if (type === 'animal') {
         state.stats.animalsMet += 1;
         state.metAnimalNames.push(name);
@@ -247,6 +314,8 @@
     state.metMonsterNames = [];
     state.metAnimalNames = [];
     state.metCarrotNames = [];
+    state.artifactsFound = [];
+    state.wounds = 0;
 
     var style = state.mapStyle || 'adventure';
     var attractionChar = getStyleIcons(style).attraction || '?';

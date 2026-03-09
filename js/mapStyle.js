@@ -17,6 +17,12 @@
   };
 
   var ADVENTURE_MONSTERS = ['👹', '👺', '🐉', '👾', '💀', '🦇', '🐲', '🧌', '🐍', '🕷️'];
+  var ADVENTURE_CHESTS = [
+    { char: '📦', type: 'chest' },
+    { char: '🎁', type: 'chest' },
+    { char: '🗝️', type: 'chest' },
+    { char: '🏺', type: 'chest' }
+  ];
   var CUTE_DECORATIONS = [
     { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' },
     { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' }, { char: '🥕', type: 'carrot' },
@@ -40,12 +46,15 @@
     return a;
   }
 
-  /** Returns array of { char, type } to scatter on map. type: 'monster' | 'carrot' | 'animal'. */
+  /** Returns array of { char, type } to scatter on map. type: 'monster' | 'carrot' | 'animal' | 'chest'. */
   function getDecorationIcons(style) {
     if (style === 'adventure') {
       var monsters = shuffleArray(ADVENTURE_MONSTERS.slice());
       var n = 5 + Math.floor(Math.random() * 6);
-      return monsters.slice(0, n).map(function (c) { return { char: c, type: 'monster' }; });
+      var list = monsters.slice(0, n).map(function (c) { return { char: c, type: 'monster' }; });
+      var numChests = 3 + Math.floor(Math.random() * 2);
+      var chests = shuffleArray(ADVENTURE_CHESTS.slice()).slice(0, numChests);
+      return list.concat(chests);
     }
     if (style === 'cute') {
       return shuffleArray(CUTE_DECORATIONS.slice());

@@ -26,7 +26,9 @@
     metMonsterNames: [],
     metAnimalNames: [],
     metCarrotNames: [],
-    selectedDecorationIndex: null
+    selectedDecorationIndex: null,
+    artifactsFound: [],
+    wounds: 0
   };
 
   function $(id) {

@@ -1200,6 +1200,10 @@ body[data-theme="cute"] .exp-tier-legendary {
   flex-shrink: 0;
 }
 
+.experience-list li.exp-entry-spoiled .exp-xp {
+  color: var(--text-muted);
+}
+
 .experience-list li.exp-empty {
   justify-content: center;
   color: var(--text-muted);
@@ -1415,6 +1419,60 @@ body[data-theme="cute"] .exp-tier-legendary {
 @keyframes arrivalPulse {
   0% { transform: scale(0.5); opacity: 0.5; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+.chest-result-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--overlay-bg);
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  pointer-events: auto;
+}
+
+.chest-result-overlay.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.chest-result-overlay:not(.hidden) {
+  display: flex !important;
+  visibility: visible !important;
+  animation: arrivalFadeIn 0.3s ease;
+}
+
+.chest-result-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.chest-result-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.chest-result-title {
+  font-size: 1.25rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.chest-result-body {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
 }
 
 .reveal-overlay {

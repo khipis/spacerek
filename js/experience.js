@@ -61,13 +61,28 @@
     listEl.innerHTML = '';
     list.slice().reverse().forEach(function (entry) {
       var li = document.createElement('li');
-      if (entry.type === 'carrot' || entry.type === 'monster' || entry.type === 'animal') {
-        var icon = entry.type === 'carrot' ? '🥕' : (entry.type === 'monster' ? '👹' : '🐾');
-        li.className = 'exp-entry exp-entry-decoration';
+      if (entry.type === 'carrot' || entry.type === 'spoiled_carrot' || entry.type === 'monster' || entry.type === 'animal') {
+        var icon = (entry.type === 'carrot' || entry.type === 'spoiled_carrot') ? '🥕' : (entry.type === 'monster' ? '👹' : '🐾');
+        var isSpoiled = entry.type === 'spoiled_carrot';
+        var xpVal = entry.xp != null ? entry.xp : 0;
+        li.className = 'exp-entry exp-entry-decoration' + (isSpoiled ? ' exp-entry-spoiled' : '');
         li.innerHTML =
           '<span class="exp-decoration-icon">' + icon + '</span>' +
+          '<span class="exp-place-name">' + escapeHtml(isSpoiled ? (t('carrot_spoiled_label') || (entry.name + ' (zepsuta)')) : (entry.name || '')) + '</span>' +
+          '<span class="exp-xp">' + (xpVal >= 0 ? '+' : '') + xpVal + ' XP</span>';
+      } else if (entry.type === 'artifact' || entry.type === 'chest_xp') {
+        var chestIcon = entry.type === 'artifact' ? '🏺' : '✨';
+        li.className = 'exp-entry exp-entry-decoration';
+        li.innerHTML =
+          '<span class="exp-decoration-icon">' + chestIcon + '</span>' +
           '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
           '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span>';
+      } else if (entry.type === 'wound') {
+        li.className = 'exp-entry exp-entry-decoration exp-entry-wound';
+        li.innerHTML =
+          '<span class="exp-decoration-icon">🩹</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp">—</span>';
       } else {
         var tierClass = 'exp-tier-' + (entry.tier || 'casual');
         li.innerHTML =

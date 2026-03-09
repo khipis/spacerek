@@ -18,6 +18,8 @@
     VALID_STYLES: ['adventure', 'stroll', 'cute'],
     WIKI_API: 'https://pl.wikipedia.org/w/api.php',
     WIKI_MAX_DIST_M: 120,
-    SIMULATE_WALK_MS: 2500
+    SIMULATE_WALK_MS: 2500,
+    CARROT_SPOILED_CHANCE: 0.12,
+    CARROT_SPOILED_XP: -3
   };
 })();

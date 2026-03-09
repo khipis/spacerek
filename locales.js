@@ -68,6 +68,19 @@
       reveal_btn_end: 'Zakończ spacer',
       reveal_desc_placeholder: 'Brak opisu.',
 
+      // Chest / mysterious place (Adventure)
+      chest_tooltip: 'Tajemnicza skrzynia',
+      chest_result_artifact_title: 'Artefakt!',
+      chest_result_artifact: 'Znalazłeś artefakt.',
+      chest_result_xp_title: 'Doświadczenie',
+      chest_result_xp_body: '+{xp} XP',
+      chest_result_wound_title: 'Rana…',
+      chest_result_wound_body: 'Otrzymujesz ranę. Nic przyjemnego.',
+      chest_xp_label: 'Skarb',
+      chest_wound_label: 'Rana',
+      chest_artifact_unknown: 'Nieznany artefakt',
+      chest_result_btn_close: 'OK',
+
       // Experience panel
       experience_title: '🏆 Twoje doświadczenie',
       experience_mode_prefix: 'Tryb: ',
@@ -113,11 +126,14 @@
       stats_summary: 'Podsumowanie',
       stats_places: 'Odwiedzone miejsca',
       stats_monsters: 'Spotkane potwory',
+      stats_artifacts: 'Artefakty',
+      stats_wounds: 'Rany',
       stats_carrots: 'Zebrane marchewki',
       stats_animals: 'Spotkane zwierzątka',
       stats_discovered_list: 'Odkryte miejsca',
       stats_btn_finish: 'Zakończ',
-      carrot_name: 'Marchewka'
+      carrot_name: 'Marchewka',
+      carrot_spoiled_label: 'Marchewka (zepsuta)'
     },
 
     en: {
@@ -175,6 +191,18 @@
       reveal_btn_end: 'End walk',
       reveal_desc_placeholder: 'No description.',
 
+      chest_tooltip: 'Mysterious chest',
+      chest_result_artifact_title: 'Artifact!',
+      chest_result_artifact: 'You found an artifact.',
+      chest_result_xp_title: 'Experience',
+      chest_result_xp_body: '+{xp} XP',
+      chest_result_wound_title: 'Wound…',
+      chest_result_wound_body: 'You received a wound. Not pleasant.',
+      chest_xp_label: 'Treasure',
+      chest_wound_label: 'Wound',
+      chest_artifact_unknown: 'Unknown artifact',
+      chest_result_btn_close: 'OK',
+
       experience_title: '🏆 Your experience',
       experience_mode_prefix: 'Mode: ',
       experience_btn_close_title: 'Close',
@@ -215,11 +243,14 @@
       stats_summary: 'Summary',
       stats_places: 'Places visited',
       stats_monsters: 'Monsters met',
+      stats_artifacts: 'Artifacts',
+      stats_wounds: 'Wounds',
       stats_carrots: 'Carrots collected',
       stats_animals: 'Animals met',
       stats_discovered_list: 'Places discovered',
       stats_btn_finish: 'Finish',
-      carrot_name: 'Carrot'
+      carrot_name: 'Carrot',
+      carrot_spoiled_label: 'Carrot (spoiled)'
     }
   };
 

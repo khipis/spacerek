@@ -468,6 +468,9 @@
     if (style === 'adventure') {
       addStatRow('👹', t('stats_monsters'), stats.monstersMet);
       addNamesList(state.metMonsterNames || [], 'stats-names-list');
+      addStatRow('🏺', t('stats_artifacts'), (state.artifactsFound && state.artifactsFound.length) || 0);
+      addNamesList(state.artifactsFound || [], 'stats-names-list');
+      addStatRow('🩹', t('stats_wounds'), state.wounds || 0);
     }
     if (style === 'cute') {
       addStatRow('🥕', t('stats_carrots'), stats.carrotsCollected);

@@ -316,6 +316,18 @@
       }
       resetWalk();
     }
+    var btnChestClose = $('btn-chest-result-close');
+    if (btnChestClose) {
+      btnChestClose.addEventListener('click', function () {
+        var overlay = $('chest-result-overlay');
+        if (overlay) {
+          overlay.classList.add('hidden');
+          overlay.style.display = 'none';
+          overlay.style.visibility = 'hidden';
+        }
+      });
+    }
+
     var btnStatsClose = $('btn-stats-close');
     var btnStatsFinish = $('btn-stats-finish');
     if (btnStatsClose) btnStatsClose.addEventListener('click', closeStatsAndReset);
