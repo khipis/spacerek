@@ -1,6 +1,6 @@
 /**
  * Local LLM (Transformers.js) for animal/NPC replies. Uses GPT-2 small for better context than DistilGPT-2.
- * Polish: static templates. English: Xenova/gpt2 in browser (~125M params, better at following conversation).
+ * Polish: static templates. English: Xenova/gpt-neo-125M in browser (125M params); fallback DistilGPT-2.
  */
 
 const POLISH_TEMPLATES = [
@@ -247,20 +247,24 @@ function getEnglishFallback(animalName) {
   return (animalName ? animalName + ' says: ' : '') + template;
 }
 
-/** Xenova/distilgpt2 works with Transformers.js 3.x (Xenova/gpt2 returns 404 for model_quantized.onnx). */
-const TEXT_GEN_MODEL = 'Xenova/distilgpt2';
+/** One step up from DistilGPT-2: gpt-neo-125M (125M params). Fallback to distilgpt2 if 404. */
+const TEXT_GEN_MODEL = 'Xenova/gpt-neo-125M';
+const FALLBACK_MODEL = 'Xenova/distilgpt2';
 
 if (typeof window !== 'undefined') {
   window.Spacerek = window.Spacerek || {};
   window.Spacerek.llmModuleLoaded = true;
 }
 
+let fallbackModelTried = false;
+
 async function loadGenerator() {
   if (generatorPromise && generatorPromise !== null) return generatorPromise;
   if (generatorPromise === false) return false;
+  const modelToTry = fallbackModelTried ? FALLBACK_MODEL : TEXT_GEN_MODEL;
   try {
     const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0');
-    const pipelinePromise = pipeline('text-generation', TEXT_GEN_MODEL, { progress_callback: null });
+    const pipelinePromise = pipeline('text-generation', modelToTry, { progress_callback: null });
     generatorPromise = pipelinePromise;
     const gen = await pipelinePromise;
     if (typeof window !== 'undefined') {
@@ -269,7 +273,12 @@ async function loadGenerator() {
     }
     return gen;
   } catch (e) {
-    console.warn('Animal quest LLM load failed (' + TEXT_GEN_MODEL + ')', e);
+    console.warn('Animal quest LLM load failed (' + modelToTry + ')', e);
+    generatorPromise = null;
+    if (!fallbackModelTried) {
+      fallbackModelTried = true;
+      return loadGenerator();
+    }
     generatorPromise = false;
     if (typeof window !== 'undefined') {
       window.Spacerek = window.Spacerek || {};
