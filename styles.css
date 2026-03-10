@@ -1140,15 +1140,80 @@ body[data-theme="cute"] .btn-experience-fab:hover {
   font-size: 0.95rem;
 }
 
-.experience-list {
-  list-style: none;
+.experience-content {
   flex: 1;
   overflow-y: auto;
   margin: 0 0 16px 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+}
+
+.experience-section {
+  margin: 0;
+}
+
+.experience-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.experience-count {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.experience-section-character .experience-character-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-sm);
+}
+
+.experience-char-emoji {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.experience-char-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.experience-char-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin: 0 0 2px 0;
+}
+
+.experience-char-level {
+  font-size: 0.9rem;
+  color: var(--xp-color);
+  margin: 0 0 4px 0;
+}
+
+.experience-char-stats {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.experience-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .experience-list li {

@@ -47,57 +47,151 @@
   }
 
   function renderExperiencePanel() {
+    var mode = state.mapStyle || 'adventure';
     var list = getExperience(getCurrentMode());
     var totalXp = totalXpFromExperience(list);
     var level = levelFromXp(totalXp);
     var totalEl = $('experience-total-xp');
     var levelEl = $('experience-level-num');
-    var listEl = $('experience-list');
+    var contentEl = $('experience-content');
     var modeEl = $('experience-mode-name');
-    if (modeEl) modeEl.textContent = t('experience_mode_prefix') + t('mode_' + (state.mapStyle || 'adventure'));
+    if (modeEl) modeEl.textContent = t('experience_mode_prefix') + t('mode_' + mode);
     if (totalEl) totalEl.textContent = totalXp;
     if (levelEl) levelEl.textContent = level;
-    if (!listEl) return;
-    listEl.innerHTML = '';
-    list.slice().reverse().forEach(function (entry) {
-      var li = document.createElement('li');
-      if (entry.type === 'carrot' || entry.type === 'spoiled_carrot' || entry.type === 'monster' || entry.type === 'animal' || entry.type === 'npc') {
-        var icon = (entry.type === 'carrot' || entry.type === 'spoiled_carrot') ? '🥕' : (entry.type === 'monster' ? '👹' : (entry.type === 'npc' ? '👤' : '🐾'));
-        var isSpoiled = entry.type === 'spoiled_carrot';
-        var xpVal = entry.xp != null ? entry.xp : 0;
-        li.className = 'exp-entry exp-entry-decoration' + (isSpoiled ? ' exp-entry-spoiled' : '');
-        li.innerHTML =
-          '<span class="exp-decoration-icon">' + icon + '</span>' +
-          '<span class="exp-place-name">' + escapeHtml(isSpoiled ? (t('carrot_spoiled_label') || (entry.name + ' (zepsuta)')) : (entry.name || '')) + '</span>' +
-          '<span class="exp-xp">' + (xpVal >= 0 ? '+' : '') + xpVal + ' XP</span>';
-      } else if (entry.type === 'artifact' || entry.type === 'chest_xp') {
-        var chestIcon = entry.type === 'artifact' ? '🏺' : '✨';
-        li.className = 'exp-entry exp-entry-decoration';
-        li.innerHTML =
-          '<span class="exp-decoration-icon">' + chestIcon + '</span>' +
+    if (!contentEl) return;
+
+    var places = [];
+    var artifacts = [];
+    var monsters = [];
+    var carrots = [];
+    var carrotsSpoiled = 0;
+    var animals = [];
+    var npcs = [];
+    var wounds = [];
+    list.forEach(function (entry) {
+      if (entry.type === 'monster') monsters.push(entry);
+      else if (entry.type === 'carrot') carrots.push(entry);
+      else if (entry.type === 'spoiled_carrot') carrotsSpoiled += 1;
+      else if (entry.type === 'animal') animals.push(entry);
+      else if (entry.type === 'npc') npcs.push(entry);
+      else if (entry.type === 'artifact' || entry.type === 'npc_reward_artifact') artifacts.push(entry);
+      else if (entry.type === 'wound') wounds.push(entry);
+      else if (!entry.type && entry.name) places.push(entry);
+    });
+
+    var char = typeof Sp.getStoredCharacter === 'function' ? Sp.getStoredCharacter(mode) : null;
+    var html = '';
+
+    if (char) {
+      var statsLine = '';
+      if (mode === 'adventure' && char.stats) {
+        var s = char.stats;
+        statsLine = '<p class="experience-char-stats">' +
+          (s.strength != null ? t('character_strength') + ' ' + s.strength : '') +
+          (s.dexterity != null ? ' · ' + t('character_dexterity') + ' ' + s.dexterity : '') +
+          (s.intelligence != null ? ' · ' + t('character_intelligence') + ' ' + s.intelligence : '') +
+          '</p>';
+      }
+      html += '<div class="experience-section experience-section-character">' +
+        '<h3 class="experience-section-title">' + t('experience_section_character') + '</h3>' +
+        '<div class="experience-character-block">' +
+        '<span class="experience-char-emoji" aria-hidden="true">' + (char.emoji || '🧙') + '</span>' +
+        '<div class="experience-char-info">' +
+        '<p class="experience-char-name">' + escapeHtml(char.name || '—') + '</p>' +
+        '<p class="experience-char-level">' + t('experience_level_prefix') + level + '</p>' +
+        (statsLine || '') +
+        '</div></div></div>';
+    }
+
+    if (places.length) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_places') + ' <span class="experience-count">(' + places.length + ')</span></h3><ul class="experience-list">';
+      places.forEach(function (entry) {
+        var tierClass = 'exp-tier-' + (entry.tier || 'casual');
+        html += '<li class="exp-entry">' +
           '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
-          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span>';
-      } else if (entry.type === 'wound') {
-        li.className = 'exp-entry exp-entry-decoration exp-entry-wound';
-        li.innerHTML =
+          '<span class="exp-tier ' + tierClass + '">' + t('tier_' + (entry.tier || 'casual')) + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (artifacts.length) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_artifacts') + ' <span class="experience-count">(' + artifacts.length + ')</span></h3><ul class="experience-list">';
+      artifacts.forEach(function (entry) {
+        html += '<li class="exp-entry exp-entry-decoration">' +
+          '<span class="exp-decoration-icon">🏺</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (monsters.length) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_monsters') + ' <span class="experience-count">(' + monsters.length + ')</span></h3><ul class="experience-list">';
+      monsters.forEach(function (entry) {
+        html += '<li class="exp-entry exp-entry-decoration">' +
+          '<span class="exp-decoration-icon">👹</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (carrots.length || carrotsSpoiled) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_carrots') + ' <span class="experience-count">(' + carrots.length + (carrotsSpoiled ? ' + ' + carrotsSpoiled + ' ' + t('experience_carrots_spoiled') : '') + ')</span></h3><ul class="experience-list">';
+      carrots.forEach(function (entry) {
+        html += '<li class="exp-entry exp-entry-decoration">' +
+          '<span class="exp-decoration-icon">🥕</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
+      });
+      if (carrotsSpoiled) {
+        html += '<li class="exp-entry exp-entry-decoration exp-entry-spoiled">' +
+          '<span class="exp-decoration-icon">🥕</span>' +
+          '<span class="exp-place-name">' + t('carrot_spoiled_label') + ' × ' + carrotsSpoiled + '</span>' +
+          '<span class="exp-xp">—</span></li>';
+      }
+      html += '</ul></div>';
+    }
+
+    if (animals.length) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_animals') + ' <span class="experience-count">(' + animals.length + ')</span></h3><ul class="experience-list">';
+      animals.forEach(function (entry) {
+        html += '<li class="exp-entry exp-entry-decoration">' +
+          '<span class="exp-decoration-icon">🐾</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (npcs.length) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_npcs') + ' <span class="experience-count">(' + npcs.length + ')</span></h3><ul class="experience-list">';
+      npcs.forEach(function (entry) {
+        html += '<li class="exp-entry exp-entry-decoration">' +
+          '<span class="exp-decoration-icon">👤</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (wounds.length) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_wounds') + ' <span class="experience-count">(' + wounds.length + ')</span></h3><ul class="experience-list">';
+      wounds.forEach(function (entry) {
+        html += '<li class="exp-entry exp-entry-decoration exp-entry-wound">' +
           '<span class="exp-decoration-icon">🩹</span>' +
           '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
-          '<span class="exp-xp">—</span>';
-      } else {
-        var tierClass = 'exp-tier-' + (entry.tier || 'casual');
-        li.innerHTML =
-          '<span class="exp-place-name">' + escapeHtml(entry.name) + '</span>' +
-          '<span class="exp-tier ' + tierClass + '">' + t('tier_' + (entry.tier || 'casual')) + '</span>' +
-          '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span>';
-      }
-      listEl.appendChild(li);
-    });
-    if (list.length === 0) {
-      var empty = document.createElement('li');
-      empty.className = 'exp-empty';
-      empty.textContent = t('experience_empty');
-      listEl.appendChild(empty);
+          '<span class="exp-xp">—</span></li>';
+      });
+      html += '</ul></div>';
     }
+
+    if (!char && !places.length && !artifacts.length && !monsters.length && !carrots.length && !carrotsSpoiled && !animals.length && !npcs.length && !wounds.length) {
+      html += '<p class="exp-empty">' + t('experience_empty') + '</p>';
+    }
+
+    contentEl.innerHTML = html;
   }
 
   function openExperiencePanel() {

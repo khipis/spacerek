@@ -39,12 +39,27 @@
     if (el) el.innerHTML = html;
   }
 
+  /** Difficulty level 1–5 from current mode XP; used to scale minigame difficulty. */
+  function getMinigameLevel() {
+    var state = Sp.state || {};
+    var mode = state.mapStyle || 'adventure';
+    var list = typeof Sp.getExperience === 'function' ? Sp.getExperience(mode) : [];
+    if (!Array.isArray(list)) list = [];
+    var totalXp = typeof Sp.totalXpFromExperience === 'function' ? Sp.totalXpFromExperience(list) : 0;
+    var level = typeof Sp.levelFromXp === 'function' ? Sp.levelFromXp(totalXp) : 1;
+    return Math.max(1, Math.min(5, level));
+  }
+
   // —— Game 1: Reflex RPS (Strike / Dodge / Spell) ——
   // Strike beats Spell, Spell beats Dodge, Dodge beats Strike
   var RPS = { strike: 0, dodge: 1, spell: 2 };
   var RPS_COUNTER = { strike: 'dodge', dodge: 'spell', spell: 'strike' };
 
-  function runReflexRPS(done) {
+  function runReflexRPS(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var telegraphMs = Math.max(400, 800 - (level - 1) * 80);
+    var choiceMs = Math.max(500, 1000 - (level - 1) * 100);
     var roundsWon = 0;
     var roundsTotal = 3;
     var keys = ['strike', 'dodge', 'spell'];
@@ -76,7 +91,7 @@
       var timerInterval = setInterval(function () {
         if (choiceMade) return;
         var elapsed = Date.now() - start;
-        var pct = Math.min(1, elapsed / 800);
+        var pct = Math.min(1, elapsed / telegraphMs);
         if (timerEl) timerEl.style.width = (100 - pct * 100) + '%';
         if (pct >= 1) {
           clearInterval(timerInterval);
@@ -93,12 +108,12 @@
         var choiceInterval = setInterval(function () {
           if (choiceMade) return;
           var elapsed = Date.now() - start;
-          if (elapsed >= 1000) {
+          if (elapsed >= choiceMs) {
             clearInterval(choiceInterval);
             if (!choiceMade) roundResult(false);
           }
         }, 50);
-      }, 800);
+      }, telegraphMs);
 
       function roundResult(won) {
         if (roundDone) return;
@@ -132,16 +147,19 @@
   }
 
   // —— Game 2: Timing hit (click when slider in green zone) ——
-  function runTimingHit(done) {
+  function runTimingHit(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var zoneWidth = Math.max(12, 24 - (level - 1) * 3);
+    var zoneLeft = 50 - zoneWidth / 2;
+    var baseDuration = Math.max(1200, 2200 - (level - 1) * 200);
     var hits = 0;
     var attempts = 0;
     var maxAttempts = 3;
-    var zoneWidth = 24;
-    var zoneLeft = 38;
 
     function attempt() {
       attempts += 1;
-      var duration = 2200 + Math.random() * 600;
+      var duration = baseDuration + Math.random() * Math.max(200, 600 - (level - 1) * 80);
       var start = Date.now();
 
       setContent(
@@ -203,7 +221,10 @@
   }
 
   // —— Game 3: Dodge signal (wait, then press in time) ——
-  function runDodgeSignal(done) {
+  function runDodgeSignal(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var windowMs = Math.max(260, 500 - (level - 1) * 60);
     var successes = 0;
     var attempts = 0;
     var maxAttempts = 3;
@@ -220,7 +241,6 @@
       var promptEl = getEl('minigame-dodge-prompt');
       var signalEl = getEl('minigame-dodge-signal');
       var delay = 800 + Math.random() * 1400;
-      var windowMs = 500;
       var signalShown = false;
       var resolved = false;
 
@@ -269,11 +289,13 @@
   }
 
   // —— Game 4: Reaction (wait for signal, then click fast) ——
-  function runReaction(done) {
+  function runReaction(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var maxReactMs = Math.max(250, 450 - (level - 1) * 50);
     var successes = 0;
     var attempts = 0;
     var maxAttempts = 3;
-    var maxReactMs = 450;
 
     function attempt() {
       attempts += 1;
@@ -297,7 +319,7 @@
         tFail = setTimeout(function () {
           if (reacted) return;
           onReact(false);
-        }, 1000);
+        }, Math.max(500, 1000 - (level - 1) * 100));
       }, delay);
       var tFail = null;
 
@@ -334,10 +356,13 @@
   }
 
   // —— Game 5: Two targets (click the lit one) ——
-  function runTwoTargets(done) {
+  function runTwoTargets(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var maxRounds = level >= 4 ? 6 : 5;
+    var hitsNeeded = level >= 4 ? 5 : 4;
     var hits = 0;
     var rounds = 0;
-    var maxRounds = 5;
 
     function round() {
       rounds += 1;
@@ -355,11 +380,11 @@
         b.addEventListener('click', function () {
           var idx = parseInt(b.getAttribute('data-idx'), 10);
           if (idx === lit) hits += 1;
-          if (hits >= 4 || rounds >= maxRounds) {
-            setContent('<p class="minigame-result ' + (hits >= 4 ? 'win' : 'lose') + '">' + (hits >= 4 ? t('minigame_win') : t('minigame_lose')) + '</p><p class="minigame-wait-prompt">' + hits + '/' + maxRounds + '</p>');
-            setTimeout(function () { done(hits >= 4); }, 1200);
+          if (hits >= hitsNeeded || rounds >= maxRounds) {
+            setContent('<p class="minigame-result ' + (hits >= hitsNeeded ? 'win' : 'lose') + '">' + (hits >= hitsNeeded ? t('minigame_win') : t('minigame_lose')) + '</p><p class="minigame-wait-prompt">' + hits + '/' + maxRounds + '</p>');
+            setTimeout(function () { done(hits >= hitsNeeded); }, 1200);
           } else {
-            setTimeout(round, 500);
+            setTimeout(round, Math.max(300, 500 - (level - 1) * 40));
           }
         }, { once: true });
       });
@@ -368,12 +393,15 @@
   }
 
   // —— Game 6: Hold and release (release when bar in green zone) ——
-  function runHoldRelease(done) {
+  function runHoldRelease(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var zoneSize = Math.max(8, 20 - (level - 1) * 3);
+    var zoneMin = 80 - zoneSize / 2;
+    var zoneMax = 80 + zoneSize / 2;
+    var holdDuration = Math.max(1000, 2000 - (level - 1) * 200);
     var hits = 0;
     var attempts = 0;
-    var zoneMin = 70;
-    var zoneMax = 90;
-    var holdDuration = 2000;
 
     function attempt() {
       attempts += 1;
@@ -430,12 +458,15 @@
   }
 
   // —— Game 7: Stop the meter (click when bar in green zone) ——
-  function runStopMeter(done) {
+  function runStopMeter(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var zoneSize = Math.max(14, 24 - (level - 1) * 2.5);
+    var zoneMin = 80 - zoneSize / 2;
+    var zoneMax = 80 + zoneSize / 2;
+    var fillDuration = Math.max(900, 1600 - (level - 1) * 150);
     var hits = 0;
     var attempts = 0;
-    var zoneMin = 68;
-    var zoneMax = 92;
-    var fillDuration = 1600;
 
     function attempt() {
       attempts += 1;
@@ -496,7 +527,10 @@
   // —— Game 8: Sequence memory (repeat 3 symbols) ——
   var SEQ_KEYS = ['strike', 'dodge', 'spell'];
 
-  function runSequence(done) {
+  function runSequence(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var showStepMs = Math.max(400, 700 - (level - 1) * 60);
     var labels = { strike: t('minigame_strike'), dodge: t('minigame_dodge'), spell: t('minigame_spell') };
     var wins = 0;
     var round = 0;
@@ -551,7 +585,7 @@
         }
         if (displayEl) displayEl.innerHTML = '<span class="minigame-seq-symbol">' + labels[sequence[step]] + '</span>';
         step += 1;
-        setTimeout(showNext, 700);
+        setTimeout(showNext, showStepMs);
       }
       showNext();
     }
@@ -559,7 +593,10 @@
   }
 
   // —— Game 9: Match the icon (remember which one was shown) ——
-  function runMatchIcon(done) {
+  function runMatchIcon(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var showMs = Math.max(500, 900 - (level - 1) * 100);
     var correct = 0;
     var attempts = 0;
     var labels = { strike: t('minigame_strike'), dodge: t('minigame_dodge'), spell: t('minigame_spell') };
@@ -596,17 +633,19 @@
             }
           });
         });
-      }, 900);
+      }, showMs);
     }
     attempt();
   }
 
   // —— Game 10: Whack (click the lit square in time) ——
-  function runWhack(done) {
+  function runWhack(done, opts) {
+    opts = opts || {};
+    var level = opts.level || 1;
+    var showMs = Math.max(500, 900 - (level - 1) * 100);
     var hits = 0;
     var rounds = 0;
     var maxRounds = 5;
-    var showMs = 900;
 
     function round() {
       rounds += 1;
@@ -652,6 +691,8 @@
 
   function startMinigame(monsterChar, onWin, onLose) {
     showOverlay(monsterChar);
+    var level = getMinigameLevel();
+    var opts = { level: level };
     var game = GAMES[Math.floor(Math.random() * GAMES.length)];
     game(function (won) {
       setTimeout(function () {
@@ -659,7 +700,7 @@
         if (won && typeof onWin === 'function') onWin();
         else if (!won && typeof onLose === 'function') onLose();
       }, 100);
-    });
+    }, opts);
   }
 
   Sp.startMinigame = startMinigame;
