@@ -325,6 +325,15 @@
       });
       elConv.scrollTop = elConv.scrollHeight;
     }
+    var elAiHint = document.getElementById('npc-ai-hint');
+    if (elAiHint) {
+      if (document.location.protocol === 'file:') {
+        elAiHint.textContent = window.t ? window.t('npc_ai_https_hint') : 'AI (🧠) works only via http/https (e.g. GitHub Pages). You see 📋 template now.';
+        elAiHint.classList.remove('hidden');
+      } else {
+        elAiHint.classList.add('hidden');
+      }
+    }
     if (elCarrotsHint) {
       if (isAnimal && state.stats && state.stats.carrotsCollected != null) {
         var n = state.stats.carrotsCollected;
@@ -392,6 +401,25 @@
   function getRandomReply(list) {
     if (!list || !list.length) return '';
     return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function showGeneratingPlaceholder() {
+    var elConv = document.getElementById('npc-conversation');
+    if (!elConv) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'npc-msg-generating';
+    wrap.className = 'npc-msg-wrap npc-msg-generating';
+    var div = document.createElement('div');
+    div.className = 'npc-msg npc-msg-them';
+    div.textContent = window.t ? window.t('npc_loading_ai') : 'Loading AI…';
+    wrap.appendChild(div);
+    elConv.appendChild(wrap);
+    elConv.scrollTop = elConv.scrollHeight;
+  }
+
+  function removeGeneratingPlaceholder() {
+    var el = document.getElementById('npc-msg-generating');
+    if (el && el.parentNode) el.parentNode.removeChild(el);
   }
 
   function appendEncounterMessage(who, text, fromLLM) {
@@ -463,16 +491,25 @@
         var sendBtn = document.getElementById('btn-npc-send');
         if (input) input.disabled = true;
         if (sendBtn) sendBtn.disabled = true;
+        showGeneratingPlaceholder();
         window.generateAnimalReplyFromContext(animalName || 'Animal', 'en', state.encounterMessages).then(function (llmReply) {
+          removeGeneratingPlaceholder();
           var reply = llmReply && llmReply.trim();
           var fromLLM = !!reply;
           if (!reply && replies && replies.animalGeneric && replies.animalGeneric.en) reply = getRandomReply(replies.animalGeneric.en);
           if (!reply) reply = 'Nice to chat!';
+          if (!fromLLM && window.Spacerek && window.Spacerek.llmModuleLoaded && Sp.showToast) {
+            Sp.showToast(window.t ? window.t('npc_model_failed_toast') : 'AI model failed – using template');
+          }
           appendEncounterMessage('them', reply, fromLLM);
           if (input) input.disabled = false;
           if (sendBtn) sendBtn.disabled = false;
         }).catch(function () {
+          removeGeneratingPlaceholder();
           var genericList = replies.animalGeneric && replies.animalGeneric[langKey];
+          if (window.Spacerek && window.Spacerek.llmModuleLoaded && Sp.showToast) {
+            Sp.showToast(window.t ? window.t('npc_model_failed_toast') : 'AI model failed – using template');
+          }
           appendEncounterMessage('them', getRandomReply(genericList) || 'Nice to chat!', false);
           if (input) input.disabled = false;
           if (sendBtn) sendBtn.disabled = false;
@@ -504,16 +541,25 @@
         var sendBtn = document.getElementById('btn-npc-send');
         if (input) input.disabled = true;
         if (sendBtn) sendBtn.disabled = true;
+        showGeneratingPlaceholder();
         window.generateNpcReplyFromContext(npcName || 'NPC', 'en', state.encounterMessages).then(function (llmReply) {
+          removeGeneratingPlaceholder();
           var reply = llmReply && llmReply.trim();
           var fromLLM = !!reply;
           if (!reply && replies && replies.npcGeneric && replies.npcGeneric.en) reply = getRandomReply(replies.npcGeneric.en);
           if (!reply) reply = 'I see. Have a nice walk!';
+          if (!fromLLM && window.Spacerek && window.Spacerek.llmModuleLoaded && Sp.showToast) {
+            Sp.showToast(window.t ? window.t('npc_model_failed_toast') : 'AI model failed – using template');
+          }
           appendEncounterMessage('them', reply, fromLLM);
           if (input) input.disabled = false;
           if (sendBtn) sendBtn.disabled = false;
         }).catch(function () {
+          removeGeneratingPlaceholder();
           var genericList = replies.npcGeneric && replies.npcGeneric[langKey];
+          if (window.Spacerek && window.Spacerek.llmModuleLoaded && Sp.showToast) {
+            Sp.showToast(window.t ? window.t('npc_model_failed_toast') : 'AI model failed – using template');
+          }
           appendEncounterMessage('them', getRandomReply(genericList) || 'I see. Have a nice walk!', false);
           if (input) input.disabled = false;
           if (sendBtn) sendBtn.disabled = false;

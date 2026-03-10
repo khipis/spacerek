@@ -145,6 +145,9 @@
       npc_badge_ai: 'AI',
       npc_badge_template: 'Szablon',
       npc_badge_template_title: 'Odpowiedź z szablonu',
+      npc_ai_https_hint: 'Odpowiedzi 🧠 AI działają tylko przez http/https (np. GitHub Pages). Teraz widzisz tylko 📋 szablon.',
+      npc_loading_ai: '⏳ Ładowanie modelu AI…',
+      npc_model_failed_toast: 'Model AI nie załadował się – używam szablonu 📋',
 
       // Experience panel
       experience_title: '🏆 Twoje doświadczenie',
@@ -330,6 +333,9 @@
       npc_badge_ai: 'AI',
       npc_badge_template: 'Template',
       npc_badge_template_title: 'Template reply',
+      npc_ai_https_hint: '🧠 AI replies (🧠) only work when you open the app via http/https (e.g. GitHub Pages or local server). You are now seeing 📋 template only.',
+      npc_loading_ai: '⏳ Loading AI model…',
+      npc_model_failed_toast: 'AI model failed to load – using template 📋',
 
       experience_title: '🏆 Your experience',
       experience_mode_prefix: 'Mode: ',

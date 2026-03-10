@@ -1688,8 +1688,8 @@ body[data-theme="cute"] .exp-tier-legendary {
 /* NPC/animal conversation (multi-turn chat) – vertical stack */
 .npc-conversation {
   flex: 1 1 0;
-  min-height: 80px;
-  max-height: 320px;
+  min-height: 100px;
+  max-height: 420px;
   overflow-y: auto;
   overflow-x: hidden;
   text-align: left;
@@ -1772,6 +1772,18 @@ body[data-theme="cute"] .exp-tier-legendary {
   color: var(--bg);
   margin-left: 24px;
   text-align: right;
+}
+
+.npc-ai-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
+  flex-shrink: 0;
+  line-height: 1.35;
+}
+
+.npc-ai-hint.hidden {
+  display: none;
 }
 
 .npc-carrots-hint {

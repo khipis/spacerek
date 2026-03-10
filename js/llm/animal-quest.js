@@ -247,21 +247,38 @@ function getEnglishFallback(animalName) {
   return (animalName ? animalName + ' says: ' : '') + template;
 }
 
-/** Model ID: Xenova/gpt2 = full GPT-2 small (better context); Xenova/distilgpt2 = smaller, faster, weaker. */
+/** Xenova/gpt2 = better context but heavier; Xenova/distilgpt2 = smaller, loads faster on GitHub Pages. */
 const TEXT_GEN_MODEL = 'Xenova/gpt2';
+const FALLBACK_MODEL = 'Xenova/distilgpt2';
+
+if (typeof window !== 'undefined') {
+  window.Spacerek = window.Spacerek || {};
+  window.Spacerek.llmModuleLoaded = true;
+}
+
+let fallbackModelTried = false;
 
 async function loadGenerator() {
-  if (generatorPromise) return generatorPromise;
+  if (generatorPromise && generatorPromise !== null) return generatorPromise;
+  if (generatorPromise === false) return false;
+  const modelToTry = fallbackModelTried ? FALLBACK_MODEL : TEXT_GEN_MODEL;
   try {
     const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0');
-    generatorPromise = pipeline('text-generation', TEXT_GEN_MODEL, { progress_callback: null });
+    const pipelinePromise = pipeline('text-generation', modelToTry, { progress_callback: null });
+    generatorPromise = pipelinePromise;
+    const gen = await pipelinePromise;
     if (typeof window !== 'undefined') {
       window.Spacerek = window.Spacerek || {};
       window.Spacerek.llmAvailable = true;
     }
-    return generatorPromise;
+    return gen;
   } catch (e) {
-    console.warn('Animal quest LLM load failed', e);
+    console.warn('Animal quest LLM load failed (' + modelToTry + ')', e);
+    generatorPromise = null;
+    if (!fallbackModelTried) {
+      fallbackModelTried = true;
+      return loadGenerator();
+    }
     generatorPromise = false;
     if (typeof window !== 'undefined') {
       window.Spacerek = window.Spacerek || {};
@@ -407,4 +424,8 @@ if (typeof window !== 'undefined') {
   window.generateAnimalQuest = generateAnimalQuest;
   window.generateAnimalReplyFromContext = generateAnimalReplyFromContext;
   window.generateNpcReplyFromContext = generateNpcReplyFromContext;
+  // Preload model in background so first NPC reply is faster (especially on GitHub Pages)
+  setTimeout(function () {
+    loadGenerator().catch(function () {});
+  }, 1500);
 }
