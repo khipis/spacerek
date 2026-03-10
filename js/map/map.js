@@ -262,6 +262,7 @@
     var name = marker._decorationName || '?';
     var xp = marker._monsterXp != null ? marker._monsterXp : 10;
     if (choice === 'fight') {
+      state.monstersKilled = (state.monstersKilled || 0) + 1;
       state.metMonsterNames.push(name);
       if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('monster', name, xp);
       if (Sp.showToast) Sp.showToast(t('monster_fight_won', { xp: xp }));
@@ -691,15 +692,39 @@
       overlay.style.display = 'none';
     }
     if (index == null || !marker) return;
-    if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);
     var name = marker._decorationName || '?';
     if (encounterType === 'animal') {
-      state.metAnimalNames.push(name);
-      var xp = carrotGiven ? ((config && config.CARROT_GIFT_XP) != null ? config.CARROT_GIFT_XP : 25) : 10;
-      if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('animal', name, xp);
-    } else {
-      state.metNpcNames.push(name);
-      if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc', name, 5);
+      if (carrotGiven) {
+        if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);
+        state.metAnimalNames.push(name);
+        var xp = (config && config.CARROT_GIFT_XP) != null ? config.CARROT_GIFT_XP : 25;
+        if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('animal', name, xp);
+      } else {
+        state.metDecorationIndices[index] = false;
+      }
+    } else if (encounterType === 'npc') {
+      var isAdventure = state.mapStyle === 'adventure';
+      var killed = (state.monstersKilled || 0) > 0;
+      if (isAdventure && killed) {
+        if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);
+        state.metNpcNames.push(name);
+        var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
+        var langKey = (lang === 'en' || lang === 'pl') ? lang : 'pl';
+        var names = (window.Spacerek && window.Spacerek.decorationNames) || {};
+        var isLegendary = names.artifactsUltralegendary && names.artifactsUltralegendary[langKey] && names.artifactsUltralegendary[langKey].length && Math.random() < 0.5;
+        var list = isLegendary ? (names.artifactsUltralegendary && names.artifactsUltralegendary[langKey]) : (names.artifacts && names.artifacts[langKey]);
+        var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : (window.t ? window.t('chest_artifact_unknown') : 'Artefakt');
+        var artifactXp = isLegendary ? 45 + Math.floor(Math.random() * 26) : 30 + Math.floor(Math.random() * 21);
+        state.artifactsFound.push(artifactName);
+        if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc_reward_artifact', artifactName, artifactXp);
+        if (Sp.showToast) Sp.showToast((isLegendary ? '🌟 ' : '🏺 ') + (window.t ? window.t('npc_artifact_reward') : 'NPC dał ci artefakt') + ': ' + artifactName + ' +' + artifactXp + ' XP');
+      } else if (isAdventure && !killed) {
+        state.metDecorationIndices[index] = false;
+      } else {
+        if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);
+        state.metNpcNames.push(name);
+        if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc', name, 5);
+      }
     }
     if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
   }
@@ -825,6 +850,7 @@
     clearDecorationMarkers();
     state.selectedDecorationIndex = null;
     state.stats = { monstersMet: 0, carrotsCollected: 0, animalsMet: 0, npcsMet: 0 };
+    state.monstersKilled = 0;
     state.metDecorationIndices = {};
     state.metMonsterNames = [];
     state.metAnimalNames = [];

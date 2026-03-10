@@ -80,6 +80,7 @@
       chest_wound_label: 'Rana',
       chest_artifact_unknown: 'Nieznany artefakt',
       chest_artifact_ultralegendary: 'Ultralegendarny!',
+      npc_artifact_reward: 'NPC dał ci epicki/legendarny artefakt',
       chest_result_btn_close: 'OK',
 
       // Monster encounter (Adventure)
@@ -274,6 +275,7 @@
       chest_wound_label: 'Wound',
       chest_artifact_unknown: 'Unknown artifact',
       chest_artifact_ultralegendary: 'Ultralegendary!',
+      npc_artifact_reward: 'NPC gave you epic/legendary artifact',
       chest_result_btn_close: 'OK',
 
       monster_encounter_title: 'Monster encounter!',
