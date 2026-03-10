@@ -318,20 +318,26 @@ export async function generateAnimalReplyFromContext(animalName, lang, messages)
   if (!gen) return null;
 
   const name = animalName || 'Animal';
-  const lines = messages.map((m) =>
+  const lastMsg = messages[messages.length - 1];
+  const humanJustSaid = lastMsg && lastMsg.who === 'player' ? lastMsg.text : '';
+  const prevLines = messages.slice(0, -1).map((m) =>
     m.who === 'them' ? name + ': ' + m.text : 'Human: ' + m.text
   );
+  const context = prevLines.length ? prevLines.join('\n') + '\n' : '';
   const prompt =
-    'Conversation with a cute animal. One short friendly reply per turn.\n' +
-    lines.join('\n') +
-    '\n' +
+    context +
+    'Human just said: "' +
+    humanJustSaid.replace(/"/g, "'") +
+    '"\n' +
+    name +
+    ' must reply directly to that in one short friendly sentence. ' +
     name +
     ': ';
 
   try {
     const result = await gen(prompt, {
-      max_new_tokens: 35,
-      temperature: 0.8,
+      max_new_tokens: 45,
+      temperature: 0.85,
       do_sample: true
     });
     const full = (result && result[0] && result[0].generated_text) ? result[0].generated_text : '';
@@ -360,20 +366,26 @@ export async function generateNpcReplyFromContext(npcName, lang, messages) {
   if (!gen) return null;
 
   const name = npcName || 'NPC';
-  const lines = messages.map((m) =>
+  const lastMsg = messages[messages.length - 1];
+  const travelerJustSaid = lastMsg && lastMsg.who === 'player' ? lastMsg.text : '';
+  const prevLines = messages.slice(0, -1).map((m) =>
     m.who === 'them' ? name + ': ' + m.text : 'Traveler: ' + m.text
   );
+  const context = prevLines.length ? prevLines.join('\n') + '\n' : '';
   const prompt =
-    'You are a fantasy world NPC (guard, merchant, hermit, etc.). Short, in-character replies only. Conversation:\n' +
-    lines.join('\n') +
-    '\n' +
+    context +
+    'Traveler just said: "' +
+    travelerJustSaid.replace(/"/g, "'") +
+    '"\n' +
+    name +
+    ' must answer that in one short in-character sentence. ' +
     name +
     ': ';
 
   try {
     const result = await gen(prompt, {
-      max_new_tokens: 40,
-      temperature: 0.8,
+      max_new_tokens: 50,
+      temperature: 0.85,
       do_sample: true
     });
     const full = (result && result[0] && result[0].generated_text) ? result[0].generated_text : '';

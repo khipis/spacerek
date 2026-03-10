@@ -1691,6 +1691,17 @@ body[data-theme="cute"] .exp-tier-legendary {
   -webkit-overflow-scrolling: touch;
 }
 
+.npc-msg-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.npc-msg-wrap:last-child {
+  margin-bottom: 0;
+}
+
 .npc-msg {
   margin-bottom: 8px;
   padding: 8px 10px;
@@ -1699,8 +1710,22 @@ body[data-theme="cute"] .exp-tier-legendary {
   line-height: 1.4;
 }
 
-.npc-msg:last-child {
+.npc-msg-wrap .npc-msg {
   margin-bottom: 0;
+}
+
+.npc-conversation > .npc-msg:last-child,
+.npc-conversation > .npc-msg-wrap:last-child {
+  margin-bottom: 0;
+}
+
+.npc-msg-ai-badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0.9;
+  letter-spacing: 0.02em;
 }
 
 .npc-msg-them {
