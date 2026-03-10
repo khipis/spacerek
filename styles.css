@@ -1688,8 +1688,8 @@ body[data-theme="cute"] .exp-tier-legendary {
 /* NPC/animal conversation (multi-turn chat) – vertical stack */
 .npc-conversation {
   flex: 1 1 0;
-  min-height: 60px;
-  max-height: 200px;
+  min-height: 80px;
+  max-height: 320px;
   overflow-y: auto;
   overflow-x: hidden;
   text-align: left;

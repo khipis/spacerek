@@ -312,7 +312,8 @@ export async function generateAnimalQuest(animalName, lang) {
  * @returns {Promise<string|null>} Next animal line, or null to use fallback
  */
 export async function generateAnimalReplyFromContext(animalName, lang, messages) {
-  if (lang !== 'en' || !messages || !messages.length) return null;
+  if (!messages || !messages.length) return null;
+  /* Always generate in English; model is EN. Caller may show reply with AI badge for any UI language. */
 
   const gen = await loadGenerator();
   if (!gen) return null;
@@ -360,7 +361,8 @@ export async function generateAnimalReplyFromContext(animalName, lang, messages)
  * @returns {Promise<string|null>} Next NPC line, or null to use fallback
  */
 export async function generateNpcReplyFromContext(npcName, lang, messages) {
-  if (lang !== 'en' || !messages || !messages.length) return null;
+  if (!messages || !messages.length) return null;
+  /* Always generate in English; model is EN. Caller may show reply with AI badge for any UI language. */
 
   const gen = await loadGenerator();
   if (!gen) return null;
