@@ -1,6 +1,6 @@
 /**
  * Local LLM (Transformers.js) for animal/NPC replies. Uses GPT-2 small for better context than DistilGPT-2.
- * Polish: static templates. English: Xenova/gpt-neo-125M in browser (125M params); fallback DistilGPT-2.
+ * Polish: static templates. English: Xenova/distilgpt2 (only TF.js 3.x–compatible model); garbage detection + fallback.
  */
 
 const POLISH_TEMPLATES = [
@@ -247,24 +247,31 @@ function getEnglishFallback(animalName) {
   return (animalName ? animalName + ' says: ' : '') + template;
 }
 
-/** One step up from DistilGPT-2: gpt-neo-125M (125M params). Fallback to distilgpt2 if 404. */
-const TEXT_GEN_MODEL = 'Xenova/gpt-neo-125M';
-const FALLBACK_MODEL = 'Xenova/distilgpt2';
+/** Only Xenova/distilgpt2 has model_quantized.onnx for TF.js 3.x; gpt2/gpt-neo-125M 404. */
+const TEXT_GEN_MODEL = 'Xenova/distilgpt2';
 
 if (typeof window !== 'undefined') {
   window.Spacerek = window.Spacerek || {};
   window.Spacerek.llmModuleLoaded = true;
 }
 
-let fallbackModelTried = false;
+/** Treat as garbage: too many non-ASCII, or very short with odd chars (model glitch). */
+function looksLikeGarbage(text) {
+  if (!text || typeof text !== 'string') return true;
+  const t = text.trim();
+  if (t.length < 3) return true;
+  const asciiLetters = (t.match(/[a-zA-Z\s.,!?'-]/g) || []).length;
+  if (t.length > 0 && asciiLetters / t.length < 0.6) return true;
+  if (/^[\x00-\x1F\u0080-\uFFFF]+$/.test(t) || /^[Ǿe\u00ad\u200b]+/i.test(t)) return true;
+  return false;
+}
 
 async function loadGenerator() {
   if (generatorPromise && generatorPromise !== null) return generatorPromise;
   if (generatorPromise === false) return false;
-  const modelToTry = fallbackModelTried ? FALLBACK_MODEL : TEXT_GEN_MODEL;
   try {
     const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0');
-    const pipelinePromise = pipeline('text-generation', modelToTry, { progress_callback: null });
+    const pipelinePromise = pipeline('text-generation', TEXT_GEN_MODEL, { progress_callback: null });
     generatorPromise = pipelinePromise;
     const gen = await pipelinePromise;
     if (typeof window !== 'undefined') {
@@ -273,12 +280,7 @@ async function loadGenerator() {
     }
     return gen;
   } catch (e) {
-    console.warn('Animal quest LLM load failed (' + modelToTry + ')', e);
-    generatorPromise = null;
-    if (!fallbackModelTried) {
-      fallbackModelTried = true;
-      return loadGenerator();
-    }
+    console.warn('Animal quest LLM load failed (' + TEXT_GEN_MODEL + ')', e);
     generatorPromise = false;
     if (typeof window !== 'undefined') {
       window.Spacerek = window.Spacerek || {};
@@ -306,14 +308,14 @@ export async function generateAnimalQuest(animalName, lang) {
   try {
     const result = await gen(prompt, {
       max_new_tokens: 22,
-      temperature: 0.8,
+      temperature: 0.65,
       do_sample: true
     });
     const full = (result && result[0] && result[0].generated_text) ? result[0].generated_text : '';
     const afterPrompt = full.indexOf(prompt) === 0 ? full.slice(prompt.length) : full;
     let line = afterPrompt.trim().replace(/\n.*/g, '').trim();
     if (line.length > 80) line = line.slice(0, 77) + '...';
-    if (!line) return getEnglishFallback(animalName);
+    if (!line || looksLikeGarbage(line)) return getEnglishFallback(animalName);
     return prompt.trim() + ' ' + line;
   } catch (e) {
     console.warn('Animal quest generation failed', e);
@@ -344,25 +346,25 @@ export async function generateAnimalReplyFromContext(animalName, lang, messages)
   const context = prevLines.length ? prevLines.join('\n') + '\n' : '';
   const prompt =
     context +
-    'Human just said: "' +
-    humanJustSaid.replace(/"/g, "'") +
+    'Human said: "' +
+    humanJustSaid.replace(/"/g, "'").slice(0, 120) +
     '"\n' +
     name +
-    ' must reply directly to that in one short friendly sentence. ' +
+    ' replies in one short English sentence only. ' +
     name +
     ': ';
 
   try {
     const result = await gen(prompt, {
-      max_new_tokens: 45,
-      temperature: 0.85,
+      max_new_tokens: 28,
+      temperature: 0.65,
       do_sample: true
     });
     const full = (result && result[0] && result[0].generated_text) ? result[0].generated_text : '';
     const afterPrompt = full.startsWith(prompt) ? full.slice(prompt.length) : full;
-    let line = afterPrompt.trim().split('\n')[0].trim();
-    if (line.length > 100) line = line.slice(0, 97) + '...';
-    if (!line) return null;
+    let line = afterPrompt.trim().split(/\n|\./)[0].trim();
+    if (line.length > 80) line = line.slice(0, 77) + '...';
+    if (!line || looksLikeGarbage(line)) return null;
     return line;
   } catch (e) {
     console.warn('Animal reply from context failed', e);
@@ -393,25 +395,25 @@ export async function generateNpcReplyFromContext(npcName, lang, messages) {
   const context = prevLines.length ? prevLines.join('\n') + '\n' : '';
   const prompt =
     context +
-    'Traveler just said: "' +
-    travelerJustSaid.replace(/"/g, "'") +
+    'Traveler said: "' +
+    travelerJustSaid.replace(/"/g, "'").slice(0, 120) +
     '"\n' +
     name +
-    ' must answer that in one short in-character sentence. ' +
+    ' answers in one short English sentence only. ' +
     name +
     ': ';
 
   try {
     const result = await gen(prompt, {
-      max_new_tokens: 50,
-      temperature: 0.85,
+      max_new_tokens: 32,
+      temperature: 0.65,
       do_sample: true
     });
     const full = (result && result[0] && result[0].generated_text) ? result[0].generated_text : '';
     const afterPrompt = full.startsWith(prompt) ? full.slice(prompt.length) : full;
-    let line = afterPrompt.trim().split('\n')[0].trim();
-    if (line.length > 120) line = line.slice(0, 117) + '...';
-    if (!line) return null;
+    let line = afterPrompt.trim().split(/\n|\./)[0].trim();
+    if (line.length > 100) line = line.slice(0, 97) + '...';
+    if (!line || looksLikeGarbage(line)) return null;
     return line;
   } catch (e) {
     console.warn('NPC reply from context failed', e);
