@@ -42,11 +42,15 @@ function cleanAndTrimReply(content, rejectIfEquals) {
   if (!t) return '';
   if (/^\d+$/.test(t)) return '';
   t = t.replace(/^[\w\s]+:\s*/i, '');
+  t = t.replace(/^(I reply|I say|I answer|I respond),?\s*/gi, '');
+  t = t.replace(/^[\w\s]+ (says|replies|responds|answers):\s*/gi, '');
   t = t.replace(/reply in one short sentence in (english|spanish|polish)\.?\s*/gi, '');
   t = t.replace(/odpowiedz jednym krótkim zdaniem po polsku\.?\s*/gi, '');
   t = t.replace(/^#+\s*(\d+\.?)?\s*/gm, '');
   t = t.replace(/^\s*\d+\.\s*/gm, '');
   t = t.replace(/^\s*[-*]\s*/gm, '');
+  if (/^["']/.test(t)) t = t.replace(/^["']+/, '');
+  if (/["']$/.test(t)) t = t.replace(/["']+$/, '');
   t = t.trim();
   var firstLine = t.split(/\n/)[0].trim();
   var firstSentence = firstLine.split(/[.!?]/)[0].trim();
@@ -66,7 +70,7 @@ function getSystemPrompt(name, lang, isAnimal) {
   var langRule = lang === 'pl'
     ? ' Reply in one short sentence in Polish only.'
     : ' Reply in one short sentence in English only.';
-  return role + ' Answer only as ' + name + ', briefly. No meta-commentary.' + langRule;
+  return role + ' Answer only as ' + name + ', briefly. Output only the reply text: no "I reply", no "I say", no "' + name + ' says/replies", no quotation marks around the reply.' + langRule;
 }
 
 function loadWebLLM(progressCb) {
