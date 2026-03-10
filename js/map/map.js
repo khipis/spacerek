@@ -297,9 +297,21 @@
     var elConv = document.getElementById('npc-conversation');
     var elCarrotsHint = document.getElementById('npc-carrots-hint');
     var elInput = document.getElementById('npc-chat-input');
+    var elLlmBadge = document.getElementById('npc-llm-badge');
     state.encounterMessages = [{ who: 'them', text: dialogue }];
     state.carrotGivenInEncounter = false;
+    state.encounterMessageCount = 0;
     if (elTitle) elTitle.textContent = name;
+    if (elLlmBadge) {
+      var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
+      var showLlm = isAnimal && lang === 'en' && window.Spacerek && window.Spacerek.llmAvailable === true;
+      if (showLlm) {
+        elLlmBadge.classList.remove('hidden');
+        elLlmBadge.title = (window.t ? window.t('npc_llm_badge_title') : 'Generated with local AI');
+      } else {
+        elLlmBadge.classList.add('hidden');
+      }
+    }
     if (elConv) {
       elConv.innerHTML = '';
       state.encounterMessages.forEach(function (msg) {
@@ -343,6 +355,35 @@
       if (raw.indexOf(keywords[i]) !== -1) return true;
     }
     return false;
+  }
+
+  function isOffensive(text, lang) {
+    if (!text || typeof text !== 'string') return false;
+    var raw = text.trim().toLowerCase();
+    if (!raw.length) return false;
+    var replies = window.Spacerek && window.Spacerek.conversationReplies;
+    if (!replies || !replies.offensiveKeywords) return false;
+    var keywords = replies.offensiveKeywords[lang === 'en' ? 'en' : 'pl'] || replies.offensiveKeywords.pl;
+    for (var i = 0; i < keywords.length; i++) {
+      if (raw.indexOf(keywords[i]) !== -1) return true;
+    }
+    return false;
+  }
+
+  var npcAutoCloseTimeout = null;
+
+  function scheduleNpcEndConversation() {
+    if (npcAutoCloseTimeout) clearTimeout(npcAutoCloseTimeout);
+    var input = document.getElementById('npc-chat-input');
+    var sendBtn = document.getElementById('btn-npc-send');
+    if (input) input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+    npcAutoCloseTimeout = setTimeout(function () {
+      npcAutoCloseTimeout = null;
+      if (input) input.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+      if (typeof Sp.finishEncounter === 'function') Sp.finishEncounter();
+    }, 2200);
   }
 
   function getRandomReply(list) {
@@ -397,19 +438,65 @@
         appendEncounterMessage('them', noCarrotsMsg);
         return;
       }
+      var animalName = state.pendingNpcMarker && state.pendingNpcMarker._decorationName;
+      if (langKey === 'en' && typeof window.generateAnimalReplyFromContext === 'function') {
+        var input = document.getElementById('npc-chat-input');
+        var sendBtn = document.getElementById('btn-npc-send');
+        if (input) input.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+        window.generateAnimalReplyFromContext(animalName || 'Animal', langKey, state.encounterMessages).then(function (llmReply) {
+          var reply = llmReply && llmReply.trim();
+          if (!reply && replies && replies.animalGeneric && replies.animalGeneric.en) reply = getRandomReply(replies.animalGeneric.en);
+          if (!reply) reply = 'Nice to chat!';
+          appendEncounterMessage('them', reply);
+          if (input) input.disabled = false;
+          if (sendBtn) sendBtn.disabled = false;
+        }).catch(function () {
+          var genericList = replies.animalGeneric && replies.animalGeneric[langKey];
+          appendEncounterMessage('them', getRandomReply(genericList) || 'Nice to chat!');
+          if (input) input.disabled = false;
+          if (sendBtn) sendBtn.disabled = false;
+        });
+        return;
+      }
       var genericList = replies.animalGeneric && replies.animalGeneric[langKey];
       appendEncounterMessage('them', getRandomReply(genericList) || (langKey === 'pl' ? 'Hmm, miło pogadać!' : 'Nice to chat!'));
       return;
     }
 
-    if (encounterType === 'npc' && replies && replies.npcGeneric && replies.npcGeneric[langKey]) {
-      appendEncounterMessage('them', getRandomReply(replies.npcGeneric[langKey]));
-    } else {
-      appendEncounterMessage('them', langKey === 'pl' ? 'Rozumiem. Miłego spaceru!' : 'I see. Have a nice walk!');
+    if (encounterType === 'npc') {
+      state.encounterMessageCount = (state.encounterMessageCount || 0) + 1;
+      var offended = isOffensive(text, lang);
+      var bored = state.encounterMessageCount >= 5;
+      if (offended && replies && replies.npcOffended && replies.npcOffended[langKey]) {
+        appendEncounterMessage('them', getRandomReply(replies.npcOffended[langKey]));
+        scheduleNpcEndConversation();
+        return;
+      }
+      if (bored && replies && replies.npcBored && replies.npcBored[langKey]) {
+        appendEncounterMessage('them', getRandomReply(replies.npcBored[langKey]));
+        scheduleNpcEndConversation();
+        return;
+      }
+      if (replies && replies.npcGeneric && replies.npcGeneric[langKey]) {
+        appendEncounterMessage('them', getRandomReply(replies.npcGeneric[langKey]));
+      } else {
+        appendEncounterMessage('them', langKey === 'pl' ? 'Rozumiem. Miłego spaceru!' : 'I see. Have a nice walk!');
+      }
+      return;
     }
+    appendEncounterMessage('them', langKey === 'pl' ? 'Rozumiem. Miłego spaceru!' : 'I see. Have a nice walk!');
   }
 
   function finishEncounter() {
+    if (npcAutoCloseTimeout) {
+      clearTimeout(npcAutoCloseTimeout);
+      npcAutoCloseTimeout = null;
+    }
+    var input = document.getElementById('npc-chat-input');
+    var sendBtn = document.getElementById('btn-npc-send');
+    if (input) input.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
     var index = state.pendingNpcIndex;
     var marker = state.pendingNpcMarker;
     var encounterType = state.pendingEncounterType;
@@ -419,6 +506,7 @@
     state.pendingEncounterType = null;
     state.encounterMessages = [];
     state.carrotGivenInEncounter = false;
+    state.encounterMessageCount = 0;
     var overlay = document.getElementById('npc-encounter-overlay');
     if (overlay) {
       overlay.classList.add('hidden');

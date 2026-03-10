@@ -254,5 +254,11 @@
     return Promise.resolve(text);
   }
 
+  /** No LLM in fallback – returns null so map.js uses template replies. */
+  function generateAnimalReplyFromContext(animalName, lang, messages) {
+    return Promise.resolve(null);
+  }
+
   window.generateAnimalQuest = generateAnimalQuest;
+  window.generateAnimalReplyFromContext = generateAnimalReplyFromContext;
 })();

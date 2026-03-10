@@ -1633,6 +1633,29 @@ body[data-theme="cute"] .exp-tier-legendary {
   font-style: italic;
 }
 
+.encounter-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.encounter-title-row .encounter-name {
+  margin-bottom: 0;
+}
+
+.npc-llm-badge {
+  font-size: 1.25rem;
+  line-height: 1;
+  opacity: 0.9;
+  cursor: help;
+}
+
+.npc-llm-badge.hidden {
+  display: none !important;
+}
+
 /* NPC/animal conversation (multi-turn chat) */
 .npc-conversation {
   max-height: 200px;

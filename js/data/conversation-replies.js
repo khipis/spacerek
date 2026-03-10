@@ -92,6 +92,45 @@
     animalNoCarrots: {
       pl: 'Nie masz teraz marchewki. Zbierz na spacerze, a potem wróć!',
       en: 'You don\'t have a carrot right now. Collect some on your walk and come back!'
+    },
+    /** Keywords that may offend NPCs (lowercase); one match triggers offended reaction. */
+    offensiveKeywords: {
+      pl: ['głupi', 'idiota', 'debil', 'kretyn', 'tępak', 'nic nie wiesz', 'zamknij się', 'odwal się', 'spadaj', 'nudziarz', 'beznadziejny'],
+      en: ['stupid', 'idiot', 'dumb', 'shut up', 'piss off', 'boring', 'useless', 'loser', 'get lost', 'whatever']
+    },
+    /** NPC says goodbye when bored (after several messages). */
+    npcBored: {
+      pl: [
+        'Muszę iść. Miło było pogadać.',
+        'To już chyba wszystko. Powodzenia w drodze!',
+        'Odejdę. Trzymaj się.',
+        'Kończymy na dziś. Do zobaczenia.',
+        'Mam coś do zrobienia. Idź z bogiem.'
+      ],
+      en: [
+        'I have to go. Nice chatting.',
+        'That\'s all for now. Good luck on the road!',
+        'I\'m off. Take care.',
+        'Let\'s call it a day. See you.',
+        'I\'ve got things to do. Go in peace.'
+      ]
+    },
+    /** NPC reacts when offended and ends conversation. */
+    npcOffended: {
+      pl: [
+        'Nie mów tak. Do widzenia.',
+        'Nie muszę tego słuchać. Odchodzę.',
+        'Mam dość. Idź swoją drogą.',
+        'Nie życzę sobie takiego tonu. Koniec rozmowy.',
+        'To nie w porządku. Żegnaj.'
+      ],
+      en: [
+        'Don\'t talk like that. Goodbye.',
+        'I don\'t have to listen to this. I\'m leaving.',
+        'I\'ve had enough. Go your way.',
+        'I won\'t stand for that tone. Conversation over.',
+        'That\'s not okay. Goodbye.'
+      ]
     }
   };
 })();

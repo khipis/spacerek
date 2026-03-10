@@ -253,19 +253,27 @@ async function loadGenerator() {
   try {
     const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0');
     generatorPromise = pipeline('text-generation', 'Xenova/distilgpt2', { progress_callback: null });
+    if (typeof window !== 'undefined') {
+      window.Spacerek = window.Spacerek || {};
+      window.Spacerek.llmAvailable = true;
+    }
     return generatorPromise;
   } catch (e) {
     console.warn('Animal quest LLM load failed', e);
     generatorPromise = false;
+    if (typeof window !== 'undefined') {
+      window.Spacerek = window.Spacerek || {};
+      window.Spacerek.llmAvailable = false;
+    }
     return false;
   }
 }
 
 /**
- * Generate a short "quest" sentence for the animal.
+ * Generate a short "quest" sentence for the animal (first message).
  * @param {string} animalName - e.g. "Puszystek"
  * @param {string} lang - 'pl' or 'en'
- * @returns {Promise<string>} Full line to show in toast
+ * @returns {Promise<string>} Full line to show
  */
 export async function generateAnimalQuest(animalName, lang) {
   if (lang === 'pl') {
@@ -294,7 +302,50 @@ export async function generateAnimalQuest(animalName, lang) {
   }
 }
 
+/**
+ * Generate the animal's next reply from full conversation context (EN only).
+ * @param {string} animalName - e.g. "Squirrel"
+ * @param {string} lang - 'pl' or 'en'
+ * @param {Array<{who: string, text: string}>} messages - full conversation so far (them + player)
+ * @returns {Promise<string|null>} Next animal line, or null to use fallback
+ */
+export async function generateAnimalReplyFromContext(animalName, lang, messages) {
+  if (lang !== 'en' || !messages || !messages.length) return null;
+
+  const gen = await loadGenerator();
+  if (!gen) return null;
+
+  const name = animalName || 'Animal';
+  const lines = messages.map((m) =>
+    m.who === 'them' ? name + ': ' + m.text : 'Human: ' + m.text
+  );
+  const prompt =
+    'Conversation with a cute animal. One short friendly reply per turn.\n' +
+    lines.join('\n') +
+    '\n' +
+    name +
+    ': ';
+
+  try {
+    const result = await gen(prompt, {
+      max_new_tokens: 35,
+      temperature: 0.8,
+      do_sample: true
+    });
+    const full = (result && result[0] && result[0].generated_text) ? result[0].generated_text : '';
+    const afterPrompt = full.startsWith(prompt) ? full.slice(prompt.length) : full;
+    let line = afterPrompt.trim().split('\n')[0].trim();
+    if (line.length > 100) line = line.slice(0, 97) + '...';
+    if (!line) return null;
+    return line;
+  } catch (e) {
+    console.warn('Animal reply from context failed', e);
+    return null;
+  }
+}
+
 // Expose globally for vanilla script usage (map.js)
 if (typeof window !== 'undefined') {
   window.generateAnimalQuest = generateAnimalQuest;
+  window.generateAnimalReplyFromContext = generateAnimalReplyFromContext;
 }

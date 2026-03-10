@@ -145,7 +145,10 @@
       </div>
       <div id="npc-encounter-overlay" class="encounter-overlay hidden" data-display="flex">
         <div class="encounter-card npc-encounter-card">
-          <h3 id="npc-encounter-title" class="encounter-name" data-i18n="npc_encounter_title">Spotkanie</h3>
+          <div class="encounter-title-row">
+            <h3 id="npc-encounter-title" class="encounter-name" data-i18n="npc_encounter_title">Spotkanie</h3>
+            <span id="npc-llm-badge" class="npc-llm-badge hidden" aria-hidden="true" title="Generowane lokalnym modelem AI">🧠</span>
+          </div>
           <div id="npc-conversation" class="npc-conversation" role="log" aria-live="polite"></div>
           <p id="npc-carrots-hint" class="npc-carrots-hint hidden"></p>
           <div class="npc-chat-row">
