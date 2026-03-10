@@ -59,8 +59,12 @@
       var list = monsters.slice(0, n).map(function (c) { return { char: c, type: 'monster' }; });
       var numChests = 3 + Math.floor(Math.random() * 2);
       var chests = shuffleArray(ADVENTURE_CHESTS.slice()).slice(0, numChests);
-      var numNpcs = 2 + Math.floor(Math.random() * 2);
-      var npcs = shuffleArray(ADVENTURE_NPCS.slice()).slice(0, numNpcs);
+      var numNpcs = 5 + Math.floor(Math.random() * 4);
+      var npcs = [];
+      for (var i = 0; i < numNpcs; i++) {
+        var pick = ADVENTURE_NPCS[Math.floor(Math.random() * ADVENTURE_NPCS.length)];
+        npcs.push({ char: pick.char, type: 'npc' });
+      }
       return list.concat(chests).concat(npcs);
     }
     if (style === 'cute') {
