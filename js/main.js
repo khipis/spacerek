@@ -444,34 +444,6 @@
 
     initStartScreen();
 
-    if (document.location.protocol !== 'file:' && typeof window.Spacerek !== 'undefined') {
-      setTimeout(function startLlmPreload() {
-        if (window.Spacerek.llmAvailable) return;
-        if (typeof window.Spacerek.preloadWebLLM !== 'function') return;
-        var wrap = document.getElementById('app-llm-progress-wrap');
-        var fill = document.getElementById('app-llm-progress-fill');
-        var textEl = document.getElementById('app-llm-progress-text');
-        var bar = wrap ? wrap.querySelector('[role="progressbar"]') : null;
-        if (wrap) wrap.classList.remove('hidden');
-        if (textEl) textEl.textContent = window.t ? window.t('npc_wait_full_experience') : 'Wait for full experience…';
-        if (fill) fill.style.width = '0%';
-        if (bar) bar.setAttribute('aria-valuenow', '0');
-        window.Spacerek.preloadWebLLM(function (prog) {
-          var pct = (prog && (prog.progress != null ? prog.progress : prog.percent)) != null ? Number(prog.progress != null ? prog.progress : prog.percent) : 0;
-          if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
-          if (bar) bar.setAttribute('aria-valuenow', Math.min(100, Math.max(0, pct)));
-          if (textEl) {
-            var label = window.t ? window.t('npc_full_experience') : 'Full experience';
-            textEl.textContent = label + (pct > 0 && pct < 100 ? ' ' + Math.round(pct) + '%' : (pct >= 100 ? '' : '…'));
-          }
-        }).then(function () {
-          if (wrap) wrap.classList.add('hidden');
-        }).catch(function () {
-          if (wrap) wrap.classList.add('hidden');
-        });
-      }, 600);
-    }
-
     var isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent || '');
     var insecure = typeof location !== 'undefined' && (
       location.protocol === 'file:' ||

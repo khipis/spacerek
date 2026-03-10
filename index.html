@@ -55,12 +55,6 @@
           <button type="button" class="btn-lang selected" data-lang="pl" title="Polski">PL</button>
           <button type="button" class="btn-lang" data-lang="en" title="English">EN</button>
         </div>
-        <div id="app-llm-progress-wrap" class="npc-llm-progress hidden" aria-live="polite">
-          <p class="npc-llm-progress-text" id="app-llm-progress-text"></p>
-          <div class="npc-llm-progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-            <div class="npc-llm-progress-fill" id="app-llm-progress-fill"></div>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -154,13 +148,6 @@
           <div class="encounter-title-row">
             <span id="npc-encounter-avatar" class="npc-encounter-avatar" aria-hidden="true"></span>
             <h3 id="npc-encounter-title" class="encounter-name" data-i18n="npc_encounter_title">Spotkanie</h3>
-            <span id="npc-llm-badge" class="npc-llm-badge hidden" aria-hidden="true" title="Generowane lokalnym modelem AI">🧠</span>
-          </div>
-          <div id="npc-llm-progress-wrap" class="npc-llm-progress hidden" aria-live="polite">
-            <p class="npc-llm-progress-text" id="npc-llm-progress-text"></p>
-            <div class="npc-llm-progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-              <div class="npc-llm-progress-fill" id="npc-llm-progress-fill"></div>
-            </div>
           </div>
           <div id="npc-conversation" class="npc-conversation" role="log" aria-live="polite"></div>
           <p id="npc-ai-hint" class="npc-ai-hint hidden" data-i18n="npc_ai_https_hint"></p>
@@ -242,18 +229,13 @@
   <!-- services: Overpass, Wikipedia -->
   <script src="js/services/places.js"></script>
   <script src="js/services/wiki.js"></script>
-  <!-- NPC dialogue: offline translator (PL↔EN), then fallback + WebLLM -->
-  <script src="js/llm/translator.js"></script>
-  <script src="js/llm/animal-quest-fallback.js"></script>
-  <script>
-    (function () {
-      if (document.location.protocol === 'file:') return;
-      var s = document.createElement('script');
-      s.type = 'module';
-      s.src = 'js/llm/npc-llm-webllm.js';
-      document.body.appendChild(s);
-    })();
-  </script>
+  <!-- NPC dialogue: intent-based engine (offline, no LLM) -->
+  <script src="js/dialogue/intentClassifier.js"></script>
+  <script src="js/dialogue/dialogueData.js"></script>
+  <script src="js/dialogue/responseGenerator.js"></script>
+  <script src="js/dialogue/questGenerator.js"></script>
+  <script src="js/dialogue/dialogueManager.js"></script>
+  <script src="js/dialogue/dialogueEngine.js"></script>
   <!-- walk: simulate, walk flow -->
   <script src="js/walk/simulate.js"></script>
   <script src="js/walk/walk.js"></script>
