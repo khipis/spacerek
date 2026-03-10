@@ -1584,13 +1584,21 @@ body[data-theme="cute"] .exp-tier-legendary {
   box-shadow: var(--shadow-lg);
 }
 
-/* NPC/animal chat card: fit viewport on portrait mobile */
+/* NPC/animal chat card: strict vertical layout, fit viewport on portrait mobile */
 .npc-encounter-card {
   max-height: calc(100vh - 24px);
+  width: 100%;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   padding: 16px;
+  box-sizing: border-box;
+}
+
+.npc-encounter-card > * {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-height: 500px) {
@@ -1602,7 +1610,7 @@ body[data-theme="cute"] .exp-tier-legendary {
 .encounter-name {
   font-size: 1.25rem;
   color: var(--text);
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .monster-stats-dl {
@@ -1654,6 +1662,7 @@ body[data-theme="cute"] .exp-tier-legendary {
 
 .encounter-title-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -1676,12 +1685,13 @@ body[data-theme="cute"] .exp-tier-legendary {
   display: none !important;
 }
 
-/* NPC/animal conversation (multi-turn chat) */
+/* NPC/animal conversation (multi-turn chat) – vertical stack */
 .npc-conversation {
   flex: 1 1 0;
   min-height: 60px;
   max-height: 200px;
   overflow-y: auto;
+  overflow-x: hidden;
   text-align: left;
   margin-bottom: 10px;
   padding: 8px;
@@ -1689,13 +1699,16 @@ body[data-theme="cute"] .exp-tier-legendary {
   border-radius: var(--radius);
   border: 1px solid var(--border, rgba(255,255,255,0.1));
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
 }
 
 .npc-msg-wrap {
   display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 12px;
 }
 
 .npc-msg-wrap:last-child {
@@ -1703,29 +1716,49 @@ body[data-theme="cute"] .exp-tier-legendary {
 }
 
 .npc-msg {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   padding: 8px 10px;
   border-radius: var(--radius);
   font-size: 0.95rem;
   line-height: 1.4;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 .npc-msg-wrap .npc-msg {
+  margin-bottom: 4px;
+}
+
+.npc-msg-wrap .npc-msg:only-child {
   margin-bottom: 0;
 }
 
-.npc-conversation > .npc-msg:last-child,
-.npc-conversation > .npc-msg-wrap:last-child {
+.npc-conversation > .npc-msg-wrap:last-child .npc-msg:last-of-type {
   margin-bottom: 0;
+}
+
+/* Visible AI / Template badges – always below the message bubble */
+.npc-msg-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .npc-msg-ai-badge {
-  flex-shrink: 0;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--accent);
-  opacity: 0.9;
-  letter-spacing: 0.02em;
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid var(--accent);
+}
+
+.npc-msg-template-badge {
+  background: var(--text-muted);
+  color: var(--bg);
+  border: 1px solid var(--text-muted);
 }
 
 .npc-msg-them {
@@ -1754,13 +1787,16 @@ body[data-theme="cute"] .exp-tier-legendary {
 
 .npc-chat-row {
   display: flex;
+  flex-direction: column;
   gap: 8px;
   margin-bottom: 10px;
   flex-shrink: 0;
+  width: 100%;
 }
 
 .npc-chat-input {
-  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid var(--border, rgba(255,255,255,0.2));
   border-radius: var(--radius);
@@ -1774,6 +1810,7 @@ body[data-theme="cute"] .exp-tier-legendary {
 }
 
 .btn-npc-send {
+  width: 100%;
   flex-shrink: 0;
 }
 
