@@ -8,8 +8,8 @@ var WLLAMA_CDN = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.7/esm/index.mi
 var WASM_SINGLE = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.7/esm/single-thread/wllama.wasm';
 var WASM_MULTI = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2.3.7/esm/multi-thread/wllama.wasm';
 var MODEL_URL = 'https://huggingface.co/QuantFactory/SmolLM-135M-GGUF/resolve/main/SmolLM-135M.Q4_K_M.gguf';
-var N_PREDICT = 48;
-var MAX_REPLY_CHARS = 120;
+var N_PREDICT = 32;
+var MAX_REPLY_CHARS = 100;
 
 var wllamaInstance = null;
 var loadPromise = null;
@@ -27,24 +27,45 @@ function getLangInstruction(lang) {
   return lang === 'pl' ? ' Odpowiedz jednym krótkim zdaniem po polsku.' : ' Reply in one short sentence in English.';
 }
 
-/** Strip prompt from completion output and clean echoes (Player:, instruction text, numbers). */
+var GARBAGE_PHRASES = [
+  'in the form of', 'the letter ', 'the other two', 'the other one', 'part of the alphabet',
+  'odpowiedz jednym krótkim zdaniem', 'reply in one short sentence'
+];
+
+function looksLikeGarbage(s) {
+  var lower = s.toLowerCase();
+  for (var i = 0; i < GARBAGE_PHRASES.length; i++) {
+    if (lower.indexOf(GARBAGE_PHRASES[i]) !== -1) return true;
+  }
+  return false;
+}
+
+/** Strip prompt from completion output and clean echoes (instruction, markdown, name echo). */
 function cleanAndTrimReply(continuation, rejectIfEquals) {
   if (!continuation || typeof continuation !== 'string') return '';
   var t = continuation.trim();
   if (!t) return '';
   if (/^\d+$/.test(t)) return '';
-  if (/^player:\s*/i.test(t)) t = t.replace(/^player:\s*/i, '');
-  if (/^traveler:\s*/i.test(t)) t = t.replace(/^traveler:\s*/i, '');
-  t = t.replace(/^reply in one short sentence in (english|spanish|polish)\.?\s*/i, '');
-  t = t.replace(/^odpowiedz jednym krótkim zdaniem po polsku\.?\s*/i, '');
+  t = t.replace(/^[\w\s]+:\s*/i, '');
+  t = t.replace(/^player:\s*/i, '');
+  t = t.replace(/^traveler:\s*/i, '');
+  t = t.replace(/reply in one short sentence in (english|spanish|polish)\.?\s*/gi, '');
+  t = t.replace(/odpowiedz jednym krótkim zdaniem po polsku\.?\s*/gi, '');
   t = t.replace(/^[\w\s]+:\s*reply to[\w\s]+(?:and[\w\s]+::?\s*)*/gi, '');
   t = t.replace(/^[\w\s]+:\s*$/i, '');
+  t = t.replace(/^#+\s*(\d+\.?)?\s*/gm, '');
+  t = t.replace(/^\s*\d+\.\s*/gm, '');
+  t = t.replace(/^\s*[-*]\s*/gm, '');
   t = t.trim();
   var firstLine = t.split(/\n/)[0].trim();
   var firstSentence = firstLine.split(/[.!?]/)[0].trim();
-  if (firstSentence) firstLine = firstSentence + (firstLine.indexOf('.') !== -1 ? '.' : '');
+  if (firstSentence) {
+    var end = firstLine.match(/[.!?]/);
+    firstLine = firstSentence + (end ? end[0] : '');
+  }
   if (firstLine.length > MAX_REPLY_CHARS) firstLine = firstLine.slice(0, MAX_REPLY_CHARS - 3) + '...';
-  if (!firstLine || /^\d+$/.test(firstLine)) return '';
+  if (!firstLine || /^\d+$/.test(firstLine) || /^[#*.\s\-]+$/i.test(firstLine)) return '';
+  if (looksLikeGarbage(firstLine)) return '';
   if (rejectIfEquals && firstLine.toLowerCase().trim() === String(rejectIfEquals).toLowerCase().trim()) return '';
   return firstLine;
 }
