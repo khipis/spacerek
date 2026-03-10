@@ -226,10 +226,17 @@
       marker._decorationType = type;
       marker._decorationName = name;
       if (type === 'monster') {
-        marker._monsterLevel = 1 + Math.floor(Math.random() * 3);
-        marker._monsterStr = 2 + Math.floor(Math.random() * 7);
-        marker._monsterDex = 2 + Math.floor(Math.random() * 7);
-        marker._monsterXp = 5 + marker._monsterLevel * 5;
+        var playerLevel = 1;
+        if (state.mapStyle === 'adventure' && typeof Sp.getExperience === 'function' && typeof Sp.totalXpFromExperience === 'function' && typeof Sp.levelFromXp === 'function') {
+          var expList = Sp.getExperience(Sp.getCurrentMode());
+          var totalXp = Sp.totalXpFromExperience(expList);
+          playerLevel = Math.max(1, Math.min(5, Sp.levelFromXp(totalXp)));
+        }
+        var levelScale = Math.max(0, playerLevel - 1);
+        marker._monsterLevel = Math.min(6, 1 + Math.floor(Math.random() * 3) + levelScale);
+        marker._monsterStr = Math.min(15, 2 + Math.floor(Math.random() * 7) + levelScale * 2);
+        marker._monsterDex = Math.min(15, 2 + Math.floor(Math.random() * 7) + levelScale * 2);
+        marker._monsterXp = 5 + marker._monsterLevel * 5 + levelScale * 3;
       }
       marker.bindTooltip(name, { permanent: false });
       marker.on('click', function () {
@@ -662,6 +669,10 @@
         var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : (window.t ? window.t('chest_artifact_unknown') : 'Artefakt');
         var artifactXp = isLegendary ? 45 + Math.floor(Math.random() * 26) : 30 + Math.floor(Math.random() * 21);
         state.artifactsFound.push(artifactName);
+        if (typeof Sp.getStoredCharacter === 'function' && typeof Sp.setStoredCharacter === 'function') {
+          var char = Sp.getStoredCharacter('adventure');
+          if (char) Sp.setStoredCharacter('adventure', applyArtifactStatBonus(Object.assign({}, char), isLegendary));
+        }
         if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc_reward_artifact', artifactName, artifactXp);
         if (Sp.showToast) Sp.showToast((isLegendary ? '🌟 ' : '🏺 ') + (window.t ? window.t('npc_artifact_reward') : 'NPC dał ci artefakt') + ': ' + artifactName + ' +' + artifactXp + ' XP');
       } else if (isAdventure && !killed) {
@@ -673,6 +684,25 @@
       }
     }
     if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
+  }
+
+  /** Apply artifact stat bonus to adventure character. Returns updated character. */
+  function applyArtifactStatBonus(character, isUltralegendary) {
+    if (!character || state.mapStyle !== 'adventure') return character;
+    var stats = character.stats || { strength: 5, dexterity: 5, intelligence: 5 };
+    var keys = ['strength', 'dexterity', 'intelligence'];
+    var cap = 18;
+    function addOne() {
+      var k = keys[Math.floor(Math.random() * keys.length)];
+      stats[k] = Math.min(cap, (stats[k] || 5) + 1);
+    }
+    addOne();
+    if (isUltralegendary) {
+      addOne();
+      addOne();
+    }
+    character.stats = stats;
+    return character;
   }
 
   function showChestResultToast(outcome, data, ultralegendary) {
@@ -702,6 +732,10 @@
       var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : t('chest_artifact_unknown');
       var xp = isUltralegendary ? ulXp : 15;
       state.artifactsFound.push(artifactName);
+      if (typeof Sp.getStoredCharacter === 'function' && typeof Sp.setStoredCharacter === 'function') {
+        var char = Sp.getStoredCharacter('adventure');
+        if (char) Sp.setStoredCharacter('adventure', applyArtifactStatBonus(Object.assign({}, char), isUltralegendary));
+      }
       if (saveDecorationEntry) saveDecorationEntry('artifact', artifactName, xp);
       showChestResultToast('artifact', artifactName, isUltralegendary);
     } else if (roll === 2) {

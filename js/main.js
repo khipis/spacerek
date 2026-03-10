@@ -376,7 +376,7 @@
           Sp.finishMonsterEncounter('fight');
         }, function () {
           Sp.finishMonsterEncounter('lose');
-        });
+        }, marker);
       } else {
         if (typeof Sp.finishMonsterEncounter === 'function') Sp.finishMonsterEncounter('fight');
       }

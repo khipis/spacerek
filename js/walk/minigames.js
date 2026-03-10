@@ -43,11 +43,23 @@
   function getMinigameLevel() {
     var state = Sp.state || {};
     var mode = state.mapStyle || 'adventure';
-    var list = typeof Sp.getExperience === 'function' ? Sp.getExperience(mode) : [];
+    var list = typeof Sp.getExperience === 'function' ? Sp.getExperience(Sp.getCurrentMode ? Sp.getCurrentMode() : mode) : [];
     if (!Array.isArray(list)) list = [];
     var totalXp = typeof Sp.totalXpFromExperience === 'function' ? Sp.totalXpFromExperience(list) : 0;
     var level = typeof Sp.levelFromXp === 'function' ? Sp.levelFromXp(totalXp) : 1;
     return Math.max(1, Math.min(5, level));
+  }
+
+  /** Effective difficulty: base level + monster level offset, then reduced by player stats (dex/str help). */
+  function getEffectiveMinigameLevel(baseLevel, monsterMarker, playerStats) {
+    var monsterLevel = (monsterMarker && monsterMarker._monsterLevel != null) ? monsterMarker._monsterLevel : 1;
+    var level = Math.min(5, Math.max(1, baseLevel + Math.floor(monsterLevel / 2) - 1));
+    if (!playerStats || typeof playerStats !== 'object') return level;
+    var bonus = 0;
+    if ((playerStats.dexterity || 0) >= 8) bonus += 1;
+    if ((playerStats.strength || 0) >= 8) bonus += 1;
+    if ((playerStats.intelligence || 0) >= 9) bonus += 1;
+    return Math.max(1, level - bonus);
   }
 
   // —— Game 1: Reflex RPS (Strike / Dodge / Spell) ——
@@ -55,13 +67,18 @@
   var RPS = { strike: 0, dodge: 1, spell: 2 };
   var RPS_COUNTER = { strike: 'dodge', dodge: 'spell', spell: 'strike' };
 
+  function dexTimeMult(opts) {
+    return (opts.playerStats && (opts.playerStats.dexterity || 0) >= 7) ? 1.12 : 1;
+  }
+
   function runReflexRPS(done, opts) {
     opts = opts || {};
     var level = opts.level || 1;
-    var telegraphMs = Math.max(400, 800 - (level - 1) * 80);
-    var choiceMs = Math.max(500, 1000 - (level - 1) * 100);
+    var mult = dexTimeMult(opts);
+    var telegraphMs = Math.floor((Math.max(400, 800 - (level - 1) * 80)) * mult);
+    var choiceMs = Math.floor((Math.max(500, 1000 - (level - 1) * 100)) * mult);
     var roundsWon = 0;
-    var roundsTotal = 3;
+    var roundsToWin = (opts.playerStats && (opts.playerStats.strength || 0) >= 9) ? 1 : 2;
     var keys = ['strike', 'dodge', 'spell'];
     var labels = { strike: t('minigame_strike'), dodge: t('minigame_dodge'), spell: t('minigame_spell') };
 
@@ -122,9 +139,9 @@
         clearInterval(timerInterval);
         if (won) roundsWon += 1;
         var roundsLost = roundNum - roundsWon;
-        if (roundsWon >= 2 || roundsLost >= 2) {
-          setContent('<p class="minigame-result ' + (roundsWon >= 2 ? 'win' : 'lose') + '">' + (roundsWon >= 2 ? t('minigame_win') : t('minigame_lose')) + '</p>');
-          setTimeout(function () { done(roundsWon >= 2); }, 1200);
+        if (roundsWon >= roundsToWin || roundsLost >= 2) {
+          setContent('<p class="minigame-result ' + (roundsWon >= roundsToWin ? 'win' : 'lose') + '">' + (roundsWon >= roundsToWin ? t('minigame_win') : t('minigame_lose')) + '</p>');
+          setTimeout(function () { done(roundsWon >= roundsToWin); }, 1200);
           return;
         }
         setTimeout(function () { playRound(roundNum + 1); }, 600);
@@ -150,9 +167,10 @@
   function runTimingHit(done, opts) {
     opts = opts || {};
     var level = opts.level || 1;
-    var zoneWidth = Math.max(12, 24 - (level - 1) * 3);
+    var mult = dexTimeMult(opts);
+    var zoneWidth = Math.min(28, Math.max(12, 24 - (level - 1) * 3) + ((opts.playerStats && (opts.playerStats.dexterity || 0) >= 7) ? 3 : 0));
     var zoneLeft = 50 - zoneWidth / 2;
-    var baseDuration = Math.max(1200, 2200 - (level - 1) * 200);
+    var baseDuration = Math.floor((Math.max(1200, 2200 - (level - 1) * 200)) * mult);
     var hits = 0;
     var attempts = 0;
     var maxAttempts = 3;
@@ -224,7 +242,8 @@
   function runDodgeSignal(done, opts) {
     opts = opts || {};
     var level = opts.level || 1;
-    var windowMs = Math.max(260, 500 - (level - 1) * 60);
+    var mult = dexTimeMult(opts);
+    var windowMs = Math.floor((Math.max(260, 500 - (level - 1) * 60)) * mult);
     var successes = 0;
     var attempts = 0;
     var maxAttempts = 3;
@@ -689,10 +708,20 @@
   // Stop meter appears 3x so it shows up often; rapid-tap removed
   var GAMES = [runStopMeter, runStopMeter, runStopMeter, runReflexRPS, runTimingHit, runDodgeSignal, runReaction, runTwoTargets, runHoldRelease, runSequence, runMatchIcon, runWhack];
 
-  function startMinigame(monsterChar, onWin, onLose) {
+  function startMinigame(monsterChar, onWin, onLose, monsterMarker) {
     showOverlay(monsterChar);
-    var level = getMinigameLevel();
-    var opts = { level: level };
+    var baseLevel = getMinigameLevel();
+    var playerStats = null;
+    if (typeof Sp.getStoredCharacter === 'function') {
+      var char = Sp.getStoredCharacter('adventure');
+      if (char && char.stats) playerStats = char.stats;
+    }
+    var level = getEffectiveMinigameLevel(baseLevel, monsterMarker, playerStats);
+    var opts = {
+      level: level,
+      playerStats: playerStats || {},
+      monsterStats: monsterMarker ? { str: monsterMarker._monsterStr, dex: monsterMarker._monsterDex, level: monsterMarker._monsterLevel } : {}
+    };
     var game = GAMES[Math.floor(Math.random() * GAMES.length)];
     game(function (won) {
       setTimeout(function () {
