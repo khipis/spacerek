@@ -143,7 +143,22 @@
     renderCharacterCard(mode);
   }
 
+  function updateExperienceButtonIcon() {
+    var mode = state.mapStyle || 'adventure';
+    var char = getStoredCharacter(mode);
+    var emoji = (char && char.emoji) ? char.emoji : (mode === 'adventure' ? '\u{1F9D9}' : (mode === 'cute' ? '\u{1F430}' : '\u{1F6B6}'));
+    var btnExp = $('btn-experience');
+    var btnExpMap = $('btn-experience-map');
+    if (btnExp) {
+      var fullLabel = t('start_btn_experience');
+      var labelOnly = fullLabel.indexOf(' ') >= 0 ? fullLabel.substring(fullLabel.indexOf(' ') + 1).trim() : fullLabel;
+      btnExp.textContent = emoji + ' ' + labelOnly;
+    }
+    if (btnExpMap) btnExpMap.textContent = emoji;
+  }
+
   function refreshDynamicLabels() {
+    updateExperienceButtonIcon();
     var userEl = document.querySelector('.user-marker-fun');
     if (userEl) userEl.title = t('tooltip_you_short');
     if (state.userMarker) {
@@ -209,6 +224,7 @@
         updateDistanceInstruction();
         ensureCharacter(state.mapStyle);
         renderCharacterCard(state.mapStyle);
+        updateExperienceButtonIcon();
       });
     });
     updateMapStyleSelection();
