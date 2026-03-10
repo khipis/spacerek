@@ -294,6 +294,7 @@
   function showEncounterOverlay(name, dialogue, isAnimal) {
     var overlay = document.getElementById('npc-encounter-overlay');
     var elTitle = document.getElementById('npc-encounter-title');
+    var elAvatar = document.getElementById('npc-encounter-avatar');
     var elConv = document.getElementById('npc-conversation');
     var elCarrotsHint = document.getElementById('npc-carrots-hint');
     var elInput = document.getElementById('npc-chat-input');
@@ -302,6 +303,12 @@
     state.carrotGivenInEncounter = false;
     state.encounterMessageCount = 0;
     if (elTitle) elTitle.textContent = name;
+    if (elAvatar) {
+      var marker = state.pendingNpcMarker;
+      var char = (marker && marker._decorationChar) ? marker._decorationChar : (isAnimal ? '\u{1F43F}' : '\u{1F464}');
+      elAvatar.textContent = char;
+      elAvatar.classList.remove('hidden');
+    }
     if (elLlmBadge) {
       var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
       var showLlm = lang === 'en' && window.Spacerek && window.Spacerek.llmAvailable === true;

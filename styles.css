@@ -1670,6 +1670,24 @@ body[data-theme="cute"] .exp-tier-legendary {
   flex-shrink: 0;
 }
 
+.npc-encounter-avatar {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  line-height: 1;
+  background: var(--bg-muted, rgba(0,0,0,0.08));
+  border-radius: 50%;
+  border: 2px solid var(--border, rgba(255,255,255,0.2));
+}
+
+.npc-encounter-avatar.hidden {
+  display: none;
+}
+
 .encounter-title-row .encounter-name {
   margin-bottom: 0;
 }
