@@ -226,14 +226,14 @@
   <!-- services: Overpass, Wikipedia -->
   <script src="js/services/places.js"></script>
   <script src="js/services/wiki.js"></script>
-  <!-- animal quest: fallback always (works file:// + GitHub Pages); LLM module only on http(s) -->
+  <!-- NPC dialogue: fallback (templates) always; GGUF/llama.cpp WASM only on http(s) -->
   <script src="js/llm/animal-quest-fallback.js"></script>
   <script>
     (function () {
       if (document.location.protocol === 'file:') return;
       var s = document.createElement('script');
       s.type = 'module';
-      s.src = 'js/llm/animal-quest.js';
+      s.src = 'js/llm/npc-llm-gguf.js';
       document.body.appendChild(s);
     })();
   </script>
