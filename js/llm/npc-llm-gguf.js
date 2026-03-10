@@ -14,6 +14,15 @@ var MAX_REPLY_CHARS = 120;
 var wllamaInstance = null;
 var loadPromise = null;
 
+var GREETING_PL = [
+  'Cześć! Fajnie że jesteś. Masz coś na ząb?', 'O, ktoś przyszedł! Cieszę się.', 'Dzień dobry! Pięknie dziś, prawda?',
+  'Hej! Nie bój się, jestem przyjazna.', 'Szukam marchewki… masz może?', 'Miło kogoś spotkać.'
+];
+var GREETING_EN = [
+  'Hi! Nice to meet you. Got a snack?', 'Oh, someone came! I\'m glad.', 'Good day! Lovely weather, right?',
+  'Hey! Don\'t be scared, I\'m friendly.', 'Looking for a carrot… have you got one?', 'Nice to meet someone.'
+];
+
 function getLangInstruction(lang) {
   return lang === 'pl' ? ' Odpowiedz jednym krótkim zdaniem po polsku.' : ' Reply in one short sentence in English.';
 }
@@ -28,6 +37,8 @@ function cleanAndTrimReply(continuation, rejectIfEquals) {
   if (/^traveler:\s*/i.test(t)) t = t.replace(/^traveler:\s*/i, '');
   t = t.replace(/^reply in one short sentence in (english|spanish|polish)\.?\s*/i, '');
   t = t.replace(/^odpowiedz jednym krótkim zdaniem po polsku\.?\s*/i, '');
+  t = t.replace(/^[\w\s]+:\s*reply to[\w\s]+(?:and[\w\s]+::?\s*)*/gi, '');
+  t = t.replace(/^[\w\s]+:\s*$/i, '');
   t = t.trim();
   var firstLine = t.split(/\n/)[0].trim();
   var firstSentence = firstLine.split(/[.!?]/)[0].trim();
@@ -90,13 +101,9 @@ function generateWithPrompt(prompt, lang, rejectIfEquals) {
 function generateAnimalQuest(animalName, lang) {
   var name = animalName || 'Animal';
   var langKey = lang === 'pl' ? 'pl' : 'en';
-  var prompt = (langKey === 'pl'
-    ? 'Zwierzę ' + name + ' mówi jedno krótkie powitanie. '
-    : 'The animal ' + name + ' says one short greeting. ') + name + ': ';
-  return generateWithPrompt(prompt, langKey).then(function (line) {
-    if (line && line.length > 0) return (langKey === 'pl' ? name + ' mówi: ' : name + ' says: ') + line;
-    return null;
-  });
+  var list = langKey === 'pl' ? GREETING_PL : GREETING_EN;
+  var line = list[Math.floor(Math.random() * list.length)];
+  return Promise.resolve((langKey === 'pl' ? name + ' mówi: ' : name + ' says: ') + line);
 }
 
 function generateAnimalReplyFromContext(animalName, lang, messages) {
@@ -104,11 +111,9 @@ function generateAnimalReplyFromContext(animalName, lang, messages) {
   var langKey = lang === 'pl' ? 'pl' : 'en';
   var name = animalName || 'Animal';
   var last = messages[messages.length - 1];
-  var playerSaid = last && last.who === 'player' ? last.text : '';
-  var context = messages.slice(0, -1).map(function (m) {
-    return m.who === 'them' ? name + ': ' + m.text : 'Player: ' + m.text;
-  }).join('\n');
-  var prompt = (context ? context + '\n' : '') + 'Player said: "' + (playerSaid || '').slice(0, 100).replace(/"/g, "'") + '"\nOutput only ' + name + '\'s reply, nothing else. ' + name + ': ';
+  var playerSaid = (last && last.who === 'player' ? last.text : '').trim().slice(0, 80).replace(/"/g, "'");
+  if (!playerSaid) return Promise.resolve(null);
+  var prompt = 'User said: "' + playerSaid + '". ' + name + ' replies in one short sentence. ' + name + ': ';
   return generateWithPrompt(prompt, langKey, playerSaid);
 }
 
@@ -117,11 +122,9 @@ function generateNpcReplyFromContext(npcName, lang, messages) {
   var langKey = lang === 'pl' ? 'pl' : 'en';
   var name = npcName || 'NPC';
   var last = messages[messages.length - 1];
-  var playerSaid = last && last.who === 'player' ? last.text : '';
-  var context = messages.slice(0, -1).map(function (m) {
-    return m.who === 'them' ? name + ': ' + m.text : 'Traveler: ' + m.text;
-  }).join('\n');
-  var prompt = (context ? context + '\n' : '') + 'Traveler said: "' + (playerSaid || '').slice(0, 100).replace(/"/g, "'") + '"\nOutput only ' + name + '\'s reply, nothing else. ' + name + ': ';
+  var playerSaid = (last && last.who === 'player' ? last.text : '').trim().slice(0, 80).replace(/"/g, "'");
+  if (!playerSaid) return Promise.resolve(null);
+  var prompt = 'User said: "' + playerSaid + '". ' + name + ' replies in one short sentence. ' + name + ': ';
   return generateWithPrompt(prompt, langKey, playerSaid);
 }
 
