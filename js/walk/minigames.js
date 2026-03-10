@@ -268,54 +268,168 @@
     attempt();
   }
 
-  // —— Game 4: Rapid tap (click as fast as possible for 3 seconds) ——
-  var TAP_REQUIRED = 14;
+  // —— Game 4: Reaction (wait for signal, then click fast) ——
+  function runReaction(done) {
+    var successes = 0;
+    var attempts = 0;
+    var maxAttempts = 3;
+    var maxReactMs = 450;
 
-  function runRapidTap(done) {
-    var count = 0;
-    var started = false;
-    var endTime = 0;
+    function attempt() {
+      attempts += 1;
+      setContent(
+        '<p class="minigame-instruction">' + t('minigame_instruction_reaction') + '</p>' +
+        '<p class="minigame-round">' + attempts + '/' + maxAttempts + '</p>' +
+        '<p id="minigame-react-prompt" class="minigame-wait-prompt">' + t('minigame_reaction_wait') + '</p>' +
+        '<button type="button" id="minigame-react-btn" class="minigame-tap-button" disabled>' + t('minigame_reaction_btn') + '</button>'
+      );
+      var promptEl = getEl('minigame-react-prompt');
+      var btn = getEl('minigame-react-btn');
+      var signalTime = 0;
+      var reacted = false;
 
-    setContent(
-      '<p class="minigame-instruction">' + t('minigame_instruction_tap', { n: TAP_REQUIRED }) + '</p>' +
-      '<p id="minigame-tap-count" class="minigame-wait-prompt">' + t('minigame_tap_count', { n: '0' }) + '</p>' +
-      '<button type="button" id="minigame-tap-btn" class="minigame-tap-button">' + t('minigame_tap_go') + '</button>'
-    );
+      var delay = 1200 + Math.random() * 1500;
+      var tShow = setTimeout(function () {
+        if (reacted) return;
+        signalTime = Date.now();
+        if (promptEl) promptEl.textContent = t('minigame_reaction_go');
+        if (btn) btn.disabled = false;
+        tFail = setTimeout(function () {
+          if (reacted) return;
+          onReact(false);
+        }, 1000);
+      }, delay);
+      var tFail = null;
 
-    var countEl = getEl('minigame-tap-count');
-    var btn = getEl('minigame-tap-btn');
-
-    function onTap() {
-      if (!started) {
-        started = true;
-        if (btn) btn.textContent = t('minigame_tap_btn');
-        endTime = Date.now() + 3000;
-        var tick = setInterval(function () {
-          if (Date.now() >= endTime) {
-            clearInterval(tick);
-            var won = count >= TAP_REQUIRED;
-            setContent(
-              '<p class="minigame-instruction">' + t('minigame_instruction_tap', { n: TAP_REQUIRED }) + '</p>' +
-              '<p class="minigame-result ' + (won ? 'win' : 'lose') + '">' + (won ? t('minigame_win') : t('minigame_lose')) + '</p>' +
-              '<p class="minigame-wait-prompt">' + t('minigame_tap_count', { n: count }) + ' / ' + TAP_REQUIRED + '</p>'
-            );
-            setTimeout(function () { done(won); }, 1400);
-            return;
+      function onReact(success) {
+        if (success !== undefined && success === false) {
+          reacted = true;
+          clearTimeout(tShow);
+          if (tFail) clearTimeout(tFail);
+          if (successes >= 2 || attempts >= maxAttempts) {
+            setContent('<p class="minigame-result lose">' + t('minigame_lose') + '</p>');
+            setTimeout(function () { done(successes >= 2); }, 1200);
+          } else {
+            setTimeout(attempt, 600);
           }
-          if (countEl) countEl.textContent = t('minigame_tap_count', { n: count });
-        }, 100);
-        return;
+          return;
+        }
+        if (reacted) return;
+        reacted = true;
+        clearTimeout(tShow);
+        if (tFail) clearTimeout(tFail);
+        var elapsed = signalTime > 0 ? Date.now() - signalTime : 9999;
+        var hit = signalTime > 0 && elapsed <= maxReactMs;
+        if (hit) successes += 1;
+        if (successes >= 2 || attempts >= maxAttempts) {
+          setContent('<p class="minigame-result ' + (successes >= 2 ? 'win' : 'lose') + '">' + (successes >= 2 ? t('minigame_win') : t('minigame_lose')) + '</p>');
+          setTimeout(function () { done(successes >= 2); }, 1200);
+        } else {
+          setTimeout(attempt, 600);
+        }
       }
-      count += 1;
-      if (countEl) countEl.textContent = t('minigame_tap_count', { n: count });
+      if (btn) btn.addEventListener('click', onReact, { once: true });
     }
-
-    if (btn) {
-      btn.addEventListener('click', onTap);
-    }
+    attempt();
   }
 
-  // —— Game 5: Stop the meter (click when bar in green zone) ——
+  // —— Game 5: Two targets (click the lit one) ——
+  function runTwoTargets(done) {
+    var hits = 0;
+    var rounds = 0;
+    var maxRounds = 5;
+
+    function round() {
+      rounds += 1;
+      var lit = Math.random() < 0.5 ? 0 : 1;
+      setContent(
+        '<p class="minigame-instruction">' + t('minigame_instruction_twotargets') + '</p>' +
+        '<p class="minigame-round">' + rounds + '/' + maxRounds + '</p>' +
+        '<div class="minigame-buttons" style="gap:16px;">' +
+        '<button type="button" class="minigame-whack-cell minigame-twotarget-btn' + (lit === 0 ? ' minigame-whack-lit' : '') + '" data-idx="0">A</button>' +
+        '<button type="button" class="minigame-whack-cell minigame-twotarget-btn' + (lit === 1 ? ' minigame-whack-lit' : '') + '" data-idx="1">B</button>' +
+        '</div>'
+      );
+      var btns = document.querySelectorAll('.minigame-twotarget-btn');
+      btns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var idx = parseInt(b.getAttribute('data-idx'), 10);
+          if (idx === lit) hits += 1;
+          if (hits >= 4 || rounds >= maxRounds) {
+            setContent('<p class="minigame-result ' + (hits >= 4 ? 'win' : 'lose') + '">' + (hits >= 4 ? t('minigame_win') : t('minigame_lose')) + '</p><p class="minigame-wait-prompt">' + hits + '/' + maxRounds + '</p>');
+            setTimeout(function () { done(hits >= 4); }, 1200);
+          } else {
+            setTimeout(round, 500);
+          }
+        }, { once: true });
+      });
+    }
+    round();
+  }
+
+  // —— Game 6: Hold and release (release when bar in green zone) ——
+  function runHoldRelease(done) {
+    var hits = 0;
+    var attempts = 0;
+    var zoneMin = 70;
+    var zoneMax = 90;
+    var holdDuration = 2000;
+
+    function attempt() {
+      attempts += 1;
+      setContent(
+        '<p class="minigame-instruction">' + t('minigame_instruction_hold') + '</p>' +
+        '<p class="minigame-round">' + attempts + '/3</p>' +
+        '<div class="minigame-timing-bar-wrap" style="height:28px;">' +
+        '<div class="minigame-timing-zone" style="left:' + zoneMin + '%; width:' + (zoneMax - zoneMin) + '%;"></div>' +
+        '<div id="minigame-hold-fill" class="minigame-stop-fill" style="width:0%;"></div>' +
+        '</div>' +
+        '<button type="button" id="minigame-hold-btn" class="minigame-tap-button" style="margin-top:12px;">' + t('minigame_hold_btn') + '</button>'
+      );
+      var fillEl = getEl('minigame-hold-fill');
+      var btn = getEl('minigame-hold-btn');
+      var startHold = 0;
+      var released = false;
+      var releaseValue = 0;
+
+      function onDown() {
+        if (released) return;
+        startHold = Date.now();
+        var anim = function () {
+          if (released) return;
+          var elapsed = Date.now() - startHold;
+          var pct = Math.min(1, elapsed / holdDuration);
+          releaseValue = pct * 100;
+          if (fillEl) fillEl.style.width = releaseValue + '%';
+          if (pct >= 1) onUp();
+          else requestAnimationFrame(anim);
+        };
+        requestAnimationFrame(anim);
+      }
+      function onUp() {
+        if (released) return;
+        released = true;
+        var hit = releaseValue >= zoneMin && releaseValue <= zoneMax;
+        if (hit) hits += 1;
+        if (hits >= 2 || attempts >= 3) {
+          setContent('<p class="minigame-result ' + (hits >= 2 ? 'win' : 'lose') + '">' + (hits >= 2 ? t('minigame_win') : t('minigame_lose')) + '</p>');
+          setTimeout(function () { done(hits >= 2); }, 1200);
+        } else {
+          setTimeout(attempt, 600);
+        }
+      }
+      if (btn) {
+        btn.addEventListener('mousedown', onDown);
+        btn.addEventListener('mouseup', onUp);
+        btn.addEventListener('mouseleave', onUp);
+        btn.addEventListener('touchstart', function (e) { e.preventDefault(); onDown(); });
+        btn.addEventListener('touchend', function (e) { e.preventDefault(); onUp(); });
+      }
+    }
+    attempt();
+  }
+
+  // —— Game 7: Stop the meter (click when bar in green zone) ——
   function runStopMeter(done) {
     var hits = 0;
     var attempts = 0;
@@ -380,7 +494,7 @@
     attempt();
   }
 
-  // —— Game 6: Sequence memory (repeat 3 symbols) ——
+  // —— Game 8: Sequence memory (repeat 3 symbols) ——
   var SEQ_KEYS = ['strike', 'dodge', 'spell'];
 
   function runSequence(done) {
@@ -445,7 +559,7 @@
     playRound();
   }
 
-  // —— Game 7: Match the icon (remember which one was shown) ——
+  // —— Game 9: Match the icon (remember which one was shown) ——
   function runMatchIcon(done) {
     var correct = 0;
     var attempts = 0;
@@ -488,7 +602,7 @@
     attempt();
   }
 
-  // —— Game 8: Whack (click the lit square in time) ——
+  // —— Game 10: Whack (click the lit square in time) ——
   function runWhack(done) {
     var hits = 0;
     var rounds = 0;
@@ -534,7 +648,8 @@
     round();
   }
 
-  var GAMES = [runReflexRPS, runTimingHit, runDodgeSignal, runRapidTap, runStopMeter, runSequence, runMatchIcon, runWhack];
+  // Stop meter appears 3x so it shows up often; rapid-tap removed
+  var GAMES = [runStopMeter, runStopMeter, runStopMeter, runReflexRPS, runTimingHit, runDodgeSignal, runReaction, runTwoTargets, runHoldRelease, runSequence, runMatchIcon, runWhack];
 
   function startMinigame(monsterChar, onWin, onLose) {
     showOverlay(monsterChar);

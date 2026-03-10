@@ -259,6 +259,11 @@
     return Promise.resolve(null);
   }
 
+  function generateNpcReplyFromContext(npcName, lang, messages) {
+    return Promise.resolve(null);
+  }
+
   window.generateAnimalQuest = generateAnimalQuest;
   window.generateAnimalReplyFromContext = generateAnimalReplyFromContext;
+  window.generateNpcReplyFromContext = generateNpcReplyFromContext;
 })();

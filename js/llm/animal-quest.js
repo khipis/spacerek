@@ -344,8 +344,51 @@ export async function generateAnimalReplyFromContext(animalName, lang, messages)
   }
 }
 
+/**
+ * Generate NPC's next reply from full conversation context (EN only). Fantasy NPC (Guard, Merchant, etc.).
+ * @param {string} npcName - e.g. "Guard", "Merchant"
+ * @param {string} lang - 'pl' or 'en'
+ * @param {Array<{who: string, text: string}>} messages - full conversation so far
+ * @returns {Promise<string|null>} Next NPC line, or null to use fallback
+ */
+export async function generateNpcReplyFromContext(npcName, lang, messages) {
+  if (lang !== 'en' || !messages || !messages.length) return null;
+
+  const gen = await loadGenerator();
+  if (!gen) return null;
+
+  const name = npcName || 'NPC';
+  const lines = messages.map((m) =>
+    m.who === 'them' ? name + ': ' + m.text : 'Traveler: ' + m.text
+  );
+  const prompt =
+    'You are a fantasy world NPC (guard, merchant, hermit, etc.). Short, in-character replies only. Conversation:\n' +
+    lines.join('\n') +
+    '\n' +
+    name +
+    ': ';
+
+  try {
+    const result = await gen(prompt, {
+      max_new_tokens: 40,
+      temperature: 0.8,
+      do_sample: true
+    });
+    const full = (result && result[0] && result[0].generated_text) ? result[0].generated_text : '';
+    const afterPrompt = full.startsWith(prompt) ? full.slice(prompt.length) : full;
+    let line = afterPrompt.trim().split('\n')[0].trim();
+    if (line.length > 120) line = line.slice(0, 117) + '...';
+    if (!line) return null;
+    return line;
+  } catch (e) {
+    console.warn('NPC reply from context failed', e);
+    return null;
+  }
+}
+
 // Expose globally for vanilla script usage (map.js)
 if (typeof window !== 'undefined') {
   window.generateAnimalQuest = generateAnimalQuest;
   window.generateAnimalReplyFromContext = generateAnimalReplyFromContext;
+  window.generateNpcReplyFromContext = generateNpcReplyFromContext;
 }

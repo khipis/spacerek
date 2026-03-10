@@ -304,7 +304,7 @@
     if (elTitle) elTitle.textContent = name;
     if (elLlmBadge) {
       var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
-      var showLlm = isAnimal && lang === 'en' && window.Spacerek && window.Spacerek.llmAvailable === true;
+      var showLlm = lang === 'en' && window.Spacerek && window.Spacerek.llmAvailable === true;
       if (showLlm) {
         elLlmBadge.classList.remove('hidden');
         elLlmBadge.title = (window.t ? window.t('npc_llm_badge_title') : 'Generated with local AI');
@@ -476,6 +476,27 @@
       if (bored && replies && replies.npcBored && replies.npcBored[langKey]) {
         appendEncounterMessage('them', getRandomReply(replies.npcBored[langKey]));
         scheduleNpcEndConversation();
+        return;
+      }
+      var npcName = state.pendingNpcMarker && state.pendingNpcMarker._decorationName;
+      if (langKey === 'en' && typeof window.generateNpcReplyFromContext === 'function') {
+        var input = document.getElementById('npc-chat-input');
+        var sendBtn = document.getElementById('btn-npc-send');
+        if (input) input.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
+        window.generateNpcReplyFromContext(npcName || 'NPC', langKey, state.encounterMessages).then(function (llmReply) {
+          var reply = llmReply && llmReply.trim();
+          if (!reply && replies && replies.npcGeneric && replies.npcGeneric.en) reply = getRandomReply(replies.npcGeneric.en);
+          if (!reply) reply = 'I see. Have a nice walk!';
+          appendEncounterMessage('them', reply);
+          if (input) input.disabled = false;
+          if (sendBtn) sendBtn.disabled = false;
+        }).catch(function () {
+          var genericList = replies.npcGeneric && replies.npcGeneric[langKey];
+          appendEncounterMessage('them', getRandomReply(genericList) || 'I see. Have a nice walk!');
+          if (input) input.disabled = false;
+          if (sendBtn) sendBtn.disabled = false;
+        });
         return;
       }
       if (replies && replies.npcGeneric && replies.npcGeneric[langKey]) {
