@@ -61,12 +61,5 @@
   }
 
   window.Spacerek = window.Spacerek || {};
-  window.Spacerek.generateAnimalQuestSync = function (animalName, lang) {
-    var langKey = (lang === 'en' || lang === 'pl') ? lang : 'pl';
-    var line = getAnimalGreeting(langKey);
-    var name = (animalName || '').trim();
-    if (name) line = (langKey === 'pl' ? name + ' mówi: ' : name + ' says: ') + line;
-    return line;
-  };
   window.Spacerek.generateAnimalQuest = generateAnimalQuest;
 })();
