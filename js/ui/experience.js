@@ -68,6 +68,7 @@
     var animals = [];
     var npcs = [];
     var wounds = [];
+    var defeats = [];
     list.forEach(function (entry) {
       if (entry.type === 'monster') monsters.push(entry);
       else if (entry.type === 'carrot') carrots.push(entry);
@@ -76,6 +77,7 @@
       else if (entry.type === 'npc') npcs.push(entry);
       else if (entry.type === 'artifact' || entry.type === 'npc_reward_artifact' || entry.type === 'place_artifact') artifacts.push(entry);
       else if (entry.type === 'wound') wounds.push(entry);
+      else if (entry.type === 'monster_defeat') defeats.push(entry);
       else if (!entry.type && entry.name) places.push(entry);
     });
 
@@ -204,7 +206,18 @@
       html += '</ul></div>';
     }
 
-    if (!char && !places.length && !artifacts.length && !monsters.length && !carrots.length && !carrotsSpoiled && !animals.length && !npcs.length && !wounds.length) {
+    if (defeats.length) {
+      html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_defeats') + ' <span class="experience-count">(' + defeats.length + ')</span></h3><ul class="experience-list">';
+      defeats.forEach(function (entry) {
+        html += '<li class="exp-entry exp-entry-decoration exp-entry-defeat">' +
+          '<span class="exp-decoration-icon">💀</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-xp exp-xp-negative">' + (entry.xp || 0) + ' XP</span></li>';
+      });
+      html += '</ul></div>';
+    }
+
+    if (!char && !places.length && !artifacts.length && !monsters.length && !carrots.length && !carrotsSpoiled && !animals.length && !npcs.length && !wounds.length && !defeats.length) {
       html += '<p class="exp-empty">' + t('experience_empty') + '</p>';
     }
 

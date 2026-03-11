@@ -361,8 +361,11 @@
       if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('monster', name, xp, { icon: monsterIcon, stats: monsterStats });
       if (Sp.showToast) Sp.showToast(t('monster_fight_won', { xp: xp }));
       if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
-    } else if (choice === 'lose' && Sp.showToast) {
-      Sp.showToast(t('monster_fight_lost'));
+    } else if (choice === 'lose') {
+      var loseXp = (config && config.MONSTER_DEFEAT_XP_LOSS) != null ? config.MONSTER_DEFEAT_XP_LOSS : 8;
+      if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('monster_defeat', name, -loseXp);
+      if (Sp.showToast) Sp.showToast(t('monster_fight_lost') + ' −' + loseXp + ' XP');
+      if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
     }
   }
 
@@ -667,8 +670,11 @@
       }
     } else if (encounterType === 'npc') {
       var isAdventure = state.mapStyle === 'adventure';
-      var killed = (state.monstersKilled || 0) > 0;
-      if (isAdventure && killed) {
+      var currentModeKey = typeof Sp.getCurrentMode === 'function' ? Sp.getCurrentMode() : 'przygoda';
+      var monsterKillCount = typeof Sp.getMonsterKillCountFromExperience === 'function' ? Sp.getMonsterKillCountFromExperience(currentModeKey) : 0;
+      var lastNpcArtifactKills = typeof Sp.getLastNpcArtifactKillCount === 'function' ? Sp.getLastNpcArtifactKillCount('adventure') : 0;
+      var canReceiveNpcArtifact = isAdventure && monsterKillCount > lastNpcArtifactKills;
+      if (isAdventure && canReceiveNpcArtifact) {
         if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);
         state.metNpcNames.push(name);
         var lang = (typeof window.getStoredLang === 'function' && window.getStoredLang()) || 'pl';
@@ -690,8 +696,9 @@
           }
         }
         if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc_reward_artifact', artifactName, artifactXp, { icon: '\u{1F4F0}', statDelta: npcStatDelta });
+        if (typeof Sp.setLastNpcArtifactKillCount === 'function') Sp.setLastNpcArtifactKillCount('adventure', monsterKillCount);
         if (Sp.showToast) Sp.showToast((isLegendary ? '🌟 ' : '🏺 ') + (window.t ? window.t('npc_artifact_reward') : 'NPC dał ci artefakt') + ': ' + artifactName + ' +' + artifactXp + ' XP');
-      } else if (isAdventure && !killed) {
+      } else if (isAdventure && !canReceiveNpcArtifact) {
         state.metDecorationIndices[index] = false;
       } else {
         if (state.map && state.map.hasLayer(marker)) state.map.removeLayer(marker);

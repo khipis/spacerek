@@ -96,7 +96,15 @@
       if (nameEl) nameEl.textContent = char.name;
       if (statsEl) {
         var s = char.stats || {};
-        var level = s.level || 1;
+        var level = 1;
+        if (typeof Sp.getExperience === 'function' && typeof Sp.totalXpFromExperience === 'function' && typeof Sp.levelFromXp === 'function') {
+          var storageMode = mode === 'adventure' ? 'przygoda' : (mode === 'stroll' ? 'spacerek' : mode);
+          var expList = Sp.getExperience(storageMode);
+          var totalXp = Sp.totalXpFromExperience(expList || []);
+          level = Sp.levelFromXp(totalXp);
+        } else {
+          level = s.level || 1;
+        }
         if (mode === 'adventure' && (s.strength != null || s.dexterity != null || s.intelligence != null)) {
           var str = s.strength != null ? s.strength : '?';
           var dex = s.dexterity != null ? s.dexterity : '?';

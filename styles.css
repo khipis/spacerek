@@ -1294,6 +1294,14 @@ body[data-theme="cute"] .exp-tier-legendary {
   color: var(--text-muted);
 }
 
+.experience-list li .exp-xp-negative {
+  color: #e06060;
+}
+
+.experience-list li.exp-entry-defeat .exp-place-name {
+  color: var(--text-muted);
+}
+
 .experience-list li.exp-empty {
   justify-content: center;
   color: var(--text-muted);
@@ -2136,9 +2144,10 @@ body[data-theme="cute"] .exp-tier-legendary {
 }
 
 .minigame-stop-zone {
-  background: rgba(45, 200, 80, 0.85);
+  background: rgba(45, 200, 80, 0.6);
   border: 2px solid #2dff50;
-  z-index: 1;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .minigame-stop-wrap {

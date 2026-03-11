@@ -117,6 +117,32 @@
     } catch (e) {}
   }
 
+  var NPC_ARTIFACT_KEY = 'spacerek_npc_artifact_kills';
+
+  function getLastNpcArtifactKillCount(mode) {
+    try {
+      var raw = localStorage.getItem(NPC_ARTIFACT_KEY);
+      if (!raw) return 0;
+      var o = JSON.parse(raw);
+      return typeof o[mode] === 'number' ? o[mode] : 0;
+    } catch (e) { return 0; }
+  }
+
+  function setLastNpcArtifactKillCount(mode, count) {
+    try {
+      var raw = localStorage.getItem(NPC_ARTIFACT_KEY);
+      var o = raw ? JSON.parse(raw) : {};
+      o[mode] = count;
+      localStorage.setItem(NPC_ARTIFACT_KEY, JSON.stringify(o));
+    } catch (e) {}
+  }
+
+  function getMonsterKillCountFromExperience(mode) {
+    var list = getExperience(mode);
+    if (!Array.isArray(list)) return 0;
+    return list.filter(function (e) { return e.type === 'monster'; }).length;
+  }
+
   Sp.getStoredTheme = getStoredTheme;
   Sp.setStoredTheme = setStoredTheme;
   Sp.getStoredCharactersRaw = getStoredCharactersRaw;
@@ -127,4 +153,7 @@
   Sp.saveExperienceEntry = saveExperienceEntry;
   Sp.saveDecorationEntry = saveDecorationEntry;
   Sp.clearStorage = clearStorage;
+  Sp.getLastNpcArtifactKillCount = getLastNpcArtifactKillCount;
+  Sp.setLastNpcArtifactKillCount = setLastNpcArtifactKillCount;
+  Sp.getMonsterKillCountFromExperience = getMonsterKillCountFromExperience;
 })();
