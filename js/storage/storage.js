@@ -85,16 +85,23 @@
     } catch (e) {}
   }
 
-  function saveDecorationEntry(type, name, xp) {
+  function saveDecorationEntry(type, name, xp, meta) {
     var data = getExperienceRaw();
     var m = getCurrentMode();
     if (!Array.isArray(data[m])) data[m] = [];
-    data[m].push({
+    var entry = {
       type: type,
       name: name,
       xp: xp != null ? xp : (DECORATION_XP[type] || 5),
       collectedAt: new Date().toISOString()
-    });
+    };
+    if (meta && typeof meta === 'object') {
+      if (meta.icon != null) entry.icon = meta.icon;
+      if (meta.description != null) entry.description = meta.description;
+      if (meta.statDelta != null) entry.statDelta = meta.statDelta;
+      if (meta.stats != null) entry.stats = meta.stats;
+    }
+    data[m].push(entry);
     try {
       localStorage.setItem(config.STORAGE_KEY, JSON.stringify(data));
     } catch (e) {}

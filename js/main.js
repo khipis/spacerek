@@ -154,7 +154,11 @@
       var labelOnly = fullLabel.indexOf(' ') >= 0 ? fullLabel.substring(fullLabel.indexOf(' ') + 1).trim() : fullLabel;
       btnExp.textContent = emoji + ' ' + labelOnly;
     }
-    if (btnExpMap) btnExpMap.textContent = emoji;
+    if (btnExpMap) {
+      var heroName = (char && char.name) ? char.name : (mode === 'adventure' ? t('mode_adventure') : (mode === 'cute' ? t('mode_cute') : t('mode_stroll')));
+      btnExpMap.textContent = emoji + ' ' + heroName;
+      btnExpMap.title = t('walk_btn_experience_title');
+    }
   }
 
   function refreshDynamicLabels() {

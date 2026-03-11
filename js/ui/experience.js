@@ -116,11 +116,21 @@
     }
 
     if (artifacts.length) {
+      var artifactIconByType = { place_artifact: '\u{1F31F}', npc_reward_artifact: '\u{1F4F0}', artifact: '\u{1F4F0}' };
       html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_artifacts') + ' <span class="experience-count">(' + artifacts.length + ')</span></h3><ul class="experience-list">';
       artifacts.forEach(function (entry) {
+        var icon = entry.icon || artifactIconByType[entry.type] || '\u{1F4F0}';
+        var statLine = '';
+        if (entry.statDelta && typeof entry.statDelta === 'object') {
+          var parts = [];
+          if (entry.statDelta.strength !== undefined && entry.statDelta.strength !== 0) parts.push((entry.statDelta.strength > 0 ? '+' : '') + entry.statDelta.strength + ' ' + t('character_strength'));
+          if (entry.statDelta.dexterity !== undefined && entry.statDelta.dexterity !== 0) parts.push((entry.statDelta.dexterity > 0 ? '+' : '') + entry.statDelta.dexterity + ' ' + t('character_dexterity'));
+          if (entry.statDelta.intelligence !== undefined && entry.statDelta.intelligence !== 0) parts.push((entry.statDelta.intelligence > 0 ? '+' : '') + entry.statDelta.intelligence + ' ' + t('character_intelligence'));
+          if (parts.length) statLine = ' <span class="exp-stat-delta">' + parts.join(', ') + '</span>';
+        }
         html += '<li class="exp-entry exp-entry-decoration">' +
-          '<span class="exp-decoration-icon">🏺</span>' +
-          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-decoration-icon">' + icon + '</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + statLine + '</span>' +
           '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
       });
       html += '</ul></div>';
@@ -129,9 +139,15 @@
     if (monsters.length) {
       html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_monsters') + ' <span class="experience-count">(' + monsters.length + ')</span></h3><ul class="experience-list">';
       monsters.forEach(function (entry) {
+        var icon = entry.icon || '\u{1F479}';
+        var statsLine = '';
+        if (entry.stats && typeof entry.stats === 'object') {
+          var s = entry.stats;
+          statsLine = ' <span class="exp-monster-stats">' + (s.str != null ? t('character_strength') + ' ' + s.str : '') + (s.dex != null ? ' · ' + t('character_dexterity') + ' ' + s.dex : '') + (s.int != null ? ' · ' + t('character_intelligence') + ' ' + s.int : '') + '</span>';
+        }
         html += '<li class="exp-entry exp-entry-decoration">' +
-          '<span class="exp-decoration-icon">👹</span>' +
-          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-decoration-icon">' + icon + '</span>' +
+          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + statsLine + '</span>' +
           '<span class="exp-xp">+' + (entry.xp || 0) + ' XP</span></li>';
       });
       html += '</ul></div>';
@@ -179,9 +195,10 @@
     if (wounds.length) {
       html += '<div class="experience-section"><h3 class="experience-section-title">' + t('experience_section_wounds') + ' <span class="experience-count">(' + wounds.length + ')</span></h3><ul class="experience-list">';
       wounds.forEach(function (entry) {
+        var desc = entry.description || entry.name || '';
         html += '<li class="exp-entry exp-entry-decoration exp-entry-wound">' +
           '<span class="exp-decoration-icon">🩹</span>' +
-          '<span class="exp-place-name">' + escapeHtml(entry.name || '') + '</span>' +
+          '<span class="exp-place-name">' + escapeHtml(desc) + '</span>' +
           '<span class="exp-xp">—</span></li>';
       });
       html += '</ul></div>';

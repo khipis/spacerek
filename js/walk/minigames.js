@@ -194,7 +194,7 @@
         '<p class="minigame-instruction">' + t('minigame_instruction_timing') + '</p>' +
         '<p class="minigame-round">' + (attempts) + '/' + maxAttempts + '</p>' +
         '<div id="minigame-timing-wrap" class="minigame-timing-bar-wrap">' +
-        '<div class="minigame-timing-zone" style="left:' + zoneLeft + '%; width:' + zoneWidth + '%;"></div>' +
+        '<div class="minigame-timing-zone minigame-timing-zone-visible" style="left:' + zoneLeft + '%; width:' + zoneWidth + '%;"></div>' +
         '<div id="minigame-timing-slider" class="minigame-timing-slider" style="left:0%;"></div>' +
         '</div>'
       );
@@ -230,8 +230,9 @@
       }
 
       if (wrap) {
-        var oneClick = function () {
+        var oneClick = function (e) {
           if (clicked) return;
+          e.preventDefault();
           var rect = wrap.getBoundingClientRect();
           var sliderRect = sliderEl ? sliderEl.getBoundingClientRect() : { left: 0, width: 0 };
           var sliderCenter = (sliderRect.left - rect.left) + sliderRect.width / 2;
@@ -240,8 +241,10 @@
           var hit = sliderCenter >= zoneStart && sliderCenter <= zoneEnd;
           roundResult(hit);
           wrap.removeEventListener('click', oneClick);
+          wrap.removeEventListener('touchend', oneClick);
         };
         wrap.addEventListener('click', oneClick);
+        wrap.addEventListener('touchend', oneClick);
       }
     }
 
@@ -264,11 +267,13 @@
         '<p class="minigame-instruction">' + t('minigame_instruction_dodge') + '</p>' +
         '<p class="minigame-round">' + attempts + '/' + maxAttempts + '</p>' +
         '<p id="minigame-dodge-prompt" class="minigame-wait-prompt">' + t('minigame_wait_signal') + '</p>' +
-        '<p id="minigame-dodge-signal" class="minigame-dodge-signal" style="display:none;">' + t('minigame_dodge_now') + '</p>'
+        '<p id="minigame-dodge-signal" class="minigame-dodge-signal" style="display:none;">' + t('minigame_dodge_now') + '</p>' +
+        '<button type="button" id="minigame-dodge-tap" class="minigame-tap-button minigame-tap-big" style="margin-top:12px;">' + t('minigame_dodge_tap_btn') + '</button>'
       );
 
       var promptEl = getEl('minigame-dodge-prompt');
       var signalEl = getEl('minigame-dodge-signal');
+      var tapBtn = getEl('minigame-dodge-tap');
       var delay = 800 + Math.random() * 1400;
       var signalShown = false;
       var resolved = false;
@@ -300,6 +305,7 @@
 
       document.addEventListener('keydown', keyOrClick);
       document.addEventListener('click', keyOrClick);
+      if (tapBtn) tapBtn.addEventListener('click', function (e) { e.preventDefault(); keyOrClick(e); });
 
       setTimeout(function () {
         if (resolved) return;
@@ -333,7 +339,7 @@
         '<p class="minigame-instruction">' + t('minigame_instruction_reaction') + '</p>' +
         '<p class="minigame-round">' + attempts + '/' + maxAttempts + '</p>' +
         '<p id="minigame-react-prompt" class="minigame-wait-prompt">' + t('minigame_reaction_wait') + '</p>' +
-        '<button type="button" id="minigame-react-btn" class="minigame-tap-button" disabled>' + t('minigame_reaction_btn') + '</button>'
+        '<button type="button" id="minigame-react-btn" class="minigame-tap-button minigame-tap-big" disabled>' + t('minigame_reaction_btn') + '</button>'
       );
       var promptEl = getEl('minigame-react-prompt');
       var btn = getEl('minigame-react-btn');
@@ -438,11 +444,11 @@
       setContent(
         '<p class="minigame-instruction">' + t('minigame_instruction_hold') + '</p>' +
         '<p class="minigame-round">' + attempts + '/3</p>' +
-        '<div class="minigame-timing-bar-wrap" style="height:28px;">' +
-        '<div class="minigame-timing-zone" style="left:' + zoneMin + '%; width:' + (zoneMax - zoneMin) + '%;"></div>' +
+        '<div class="minigame-timing-bar-wrap minigame-stop-wrap" style="height:28px;">' +
+        '<div class="minigame-timing-zone minigame-stop-zone" style="left:' + zoneMin + '%; width:' + (zoneMax - zoneMin) + '%;"></div>' +
         '<div id="minigame-hold-fill" class="minigame-stop-fill" style="width:0%;"></div>' +
         '</div>' +
-        '<button type="button" id="minigame-hold-btn" class="minigame-tap-button" style="margin-top:12px;">' + t('minigame_hold_btn') + '</button>'
+        '<button type="button" id="minigame-hold-btn" class="minigame-tap-button minigame-tap-big" style="margin-top:12px;">' + t('minigame_hold_btn') + '</button>'
       );
       var fillEl = getEl('minigame-hold-fill');
       var btn = getEl('minigame-hold-btn');
@@ -507,11 +513,11 @@
       setContent(
         '<p class="minigame-instruction">' + t('minigame_instruction_stop') + '</p>' +
         '<p class="minigame-wait-prompt">' + attempts + '/3</p>' +
-        '<div class="minigame-timing-bar-wrap" style="height:28px;">' +
-        '<div class="minigame-timing-zone" style="left:' + zoneMin + '%; width:' + (zoneMax - zoneMin) + '%;"></div>' +
+        '<div class="minigame-timing-bar-wrap minigame-stop-wrap" style="height:32px;">' +
+        '<div class="minigame-timing-zone minigame-stop-zone" style="left:' + zoneMin + '%; width:' + (zoneMax - zoneMin) + '%;"></div>' +
         '<div id="minigame-stop-fill" class="minigame-stop-fill" style="width:0%;"></div>' +
         '</div>' +
-        '<button type="button" id="minigame-stop-btn" class="minigame-tap-button" style="margin-top:12px;">' + t('minigame_stop_btn') + '</button>'
+        '<button type="button" id="minigame-stop-btn" class="minigame-tap-button minigame-tap-big" style="margin-top:14px;">' + t('minigame_stop_btn') + '</button>'
       );
 
       var fillEl = getEl('minigame-stop-fill');
@@ -544,11 +550,13 @@
       }
 
       if (btnEl) {
-        btnEl.addEventListener('click', function () {
+        var onStop = function () {
           if (stopped) return;
           var hit = stopValue >= zoneMin && stopValue <= zoneMax;
           roundResult(hit);
-        });
+        };
+        btnEl.addEventListener('click', onStop);
+        btnEl.addEventListener('touchend', function (e) { e.preventDefault(); onStop(); });
       }
     }
     attempt();
@@ -731,7 +739,7 @@
     var opts = {
       level: level,
       playerStats: playerStats || {},
-      monsterStats: monsterMarker ? { str: monsterMarker._monsterStr, dex: monsterMarker._monsterDex, level: monsterMarker._monsterLevel } : {}
+      monsterStats: monsterMarker ? { str: monsterMarker._monsterStr, dex: monsterMarker._monsterDex, int: monsterMarker._monsterInt, level: monsterMarker._monsterLevel } : {}
     };
     var game = GAMES[Math.floor(Math.random() * GAMES.length)];
     game(function (won) {

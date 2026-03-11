@@ -238,9 +238,11 @@
         var baseLevel = powerRoll < 25 ? 1 + Math.floor(Math.random() * 2) : powerRoll < 70 ? 2 + Math.floor(Math.random() * 2) : 3 + Math.floor(Math.random() * 2);
         var baseStr = powerRoll < 25 ? 2 + Math.floor(Math.random() * 4) : powerRoll < 70 ? 4 + Math.floor(Math.random() * 4) : 6 + Math.floor(Math.random() * 4);
         var baseDex = powerRoll < 25 ? 2 + Math.floor(Math.random() * 4) : powerRoll < 70 ? 4 + Math.floor(Math.random() * 4) : 6 + Math.floor(Math.random() * 4);
+        var baseInt = 2 + Math.floor(Math.random() * 6);
         marker._monsterLevel = Math.min(5, baseLevel + scaleCap);
         marker._monsterStr = Math.min(14, baseStr + scaleCap * 2);
         marker._monsterDex = Math.min(14, baseDex + scaleCap * 2);
+        marker._monsterInt = Math.min(14, baseInt + scaleCap);
         marker._monsterXp = 8 + marker._monsterLevel * 4 + levelScale * 2;
       }
       marker.bindTooltip(name, { permanent: false });
@@ -350,7 +352,13 @@
     if (choice === 'fight') {
       state.monstersKilled = (state.monstersKilled || 0) + 1;
       state.metMonsterNames.push(name);
-      if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('monster', name, xp);
+      var monsterIcon = marker._decorationChar || '\u{1F479}';
+      var monsterStats = {
+        str: marker._monsterStr != null ? marker._monsterStr : 5,
+        dex: marker._monsterDex != null ? marker._monsterDex : 5,
+        int: marker._monsterInt != null ? marker._monsterInt : 5
+      };
+      if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('monster', name, xp, { icon: monsterIcon, stats: monsterStats });
       if (Sp.showToast) Sp.showToast(t('monster_fight_won', { xp: xp }));
       if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
     } else if (choice === 'lose' && Sp.showToast) {
@@ -672,11 +680,16 @@
         var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : (window.t ? window.t('chest_artifact_unknown') : 'Artefakt');
         var artifactXp = ARTIFACT_RANK_XP[npcRank] != null ? ARTIFACT_RANK_XP[npcRank] : 28;
         state.artifactsFound.push(artifactName);
+        var npcStatDelta = null;
         if (typeof Sp.getStoredCharacter === 'function' && typeof Sp.setStoredCharacter === 'function') {
           var char = Sp.getStoredCharacter('adventure');
-          if (char) Sp.setStoredCharacter('adventure', applyArtifactStatBonus(Object.assign({}, char), npcRank));
+          if (char) {
+            var out = applyArtifactStatBonus(Object.assign({}, char), npcRank);
+            Sp.setStoredCharacter('adventure', out.character);
+            npcStatDelta = out.statDelta;
+          }
         }
-        if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc_reward_artifact', artifactName, artifactXp);
+        if (Sp.saveDecorationEntry) Sp.saveDecorationEntry('npc_reward_artifact', artifactName, artifactXp, { icon: '\u{1F4F0}', statDelta: npcStatDelta });
         if (Sp.showToast) Sp.showToast((isLegendary ? '🌟 ' : '🏺 ') + (window.t ? window.t('npc_artifact_reward') : 'NPC dał ci artefakt') + ': ' + artifactName + ' +' + artifactXp + ' XP');
       } else if (isAdventure && !killed) {
         state.metDecorationIndices[index] = false;
@@ -692,20 +705,28 @@
   /** Artifact rank: common, rare, epic, legendary, ultralegendary. XP and stat bonus scale by rank. */
   var ARTIFACT_RANK_XP = { common: 12, rare: 18, epic: 28, legendary: 38, ultralegendary: 50 };
 
-  /** Apply artifact stat bonus to adventure character by rank. Returns updated character. */
+  /** Apply artifact stat bonus to adventure character by rank. Returns { character, statDelta }. statDelta may be negative for cursed. */
   function applyArtifactStatBonus(character, rank) {
-    if (!character || state.mapStyle !== 'adventure') return character;
-    var stats = character.stats || { strength: 5, dexterity: 5, intelligence: 5 };
+    if (!character || state.mapStyle !== 'adventure') return { character: character, statDelta: {} };
+    var stats = Object.assign({}, character.stats || { strength: 5, dexterity: 5, intelligence: 5 });
+    var before = { strength: stats.strength || 5, dexterity: stats.dexterity || 5, intelligence: stats.intelligence || 5 };
     var keys = ['strength', 'dexterity', 'intelligence'];
     var cap = 18;
+    var cursed = rank === 'common' && Math.random() < 0.15;
     function addToRandom(amount) {
       var k = keys[Math.floor(Math.random() * keys.length)];
-      stats[k] = Math.min(cap, (stats[k] || 5) + amount);
+      stats[k] = Math.min(cap, Math.max(1, (stats[k] || 5) + amount));
+    }
+    function subFromRandom(amount) {
+      var k = keys[Math.floor(Math.random() * keys.length)];
+      stats[k] = Math.max(1, (stats[k] || 5) - amount);
     }
     function addOne() {
       addToRandom(1);
     }
-    if (rank === 'ultralegendary') {
+    if (cursed) {
+      subFromRandom(1);
+    } else if (rank === 'ultralegendary') {
       addToRandom(2);
       addToRandom(2);
     } else if (rank === 'legendary') {
@@ -720,7 +741,41 @@
       addOne();
     }
     character.stats = stats;
-    return character;
+    var statDelta = {
+      strength: (stats.strength || 5) - before.strength,
+      dexterity: (stats.dexterity || 5) - before.dexterity,
+      intelligence: (stats.intelligence || 5) - before.intelligence
+    };
+    return { character: character, statDelta: statDelta };
+  }
+
+  var WOUND_DESCRIPTIONS = {
+    pl: [
+      'Skaleczyłeś się o zardzewiałą krawędź skrzyni.',
+      'Ostre drzazgi ze skrzyni wbiły się w palec.',
+      'Przy otwieraniu skrzyni przytrzasnąłeś sobie dłoń.',
+      'Zakurzona skrzynia wywołała kichnięcie – potknąłeś się i obtarłeś kolano.',
+      'Ukryty kolec w skrzyni zadrasnął cię w ramię.',
+      'Stary zamek odskoczył i uderzył cię w nos.',
+      'Zapadła się pokrywa – skręciłeś nadgarstek.',
+      'W środku był tylko kurz i pajęczyny – wpadły ci do oka.'
+    ],
+    en: [
+      'You cut yourself on the rusty edge of the chest.',
+      'Sharp splinters from the chest stuck into your finger.',
+      'You pinched your hand while opening the chest.',
+      'The dusty chest made you sneeze – you tripped and scraped your knee.',
+      'A hidden spike in the chest scratched your arm.',
+      'The old lock sprang back and hit you on the nose.',
+      'The lid gave way – you twisted your wrist.',
+      'Inside was only dust and cobwebs – they got in your eye.'
+    ]
+  };
+
+  function getRandomWoundDescription(langKey) {
+    var list = WOUND_DESCRIPTIONS[langKey] || WOUND_DESCRIPTIONS.pl;
+    var text = (Array.isArray(list) && list.length) ? list[Math.floor(Math.random() * list.length)] : (langKey === 'en' ? 'You got hurt opening the chest.' : 'Otrzymałeś ranę przy skrzyni.');
+    return { name: t('chest_wound_label'), text: text };
   }
 
   function showChestResultToast(outcome, data, ultralegendary) {
@@ -732,7 +787,8 @@
       var xp = data != null ? data : 15;
       Sp.showToast('✨ ' + t('chest_result_xp_title') + ' +' + xp + ' XP');
     } else {
-      Sp.showToast('🩹 ' + t('chest_result_wound_title'), 'wound');
+      var woundText = (data && typeof data === 'string') ? data : t('chest_result_wound_title');
+      Sp.showToast('🩹 ' + woundText, 'wound');
     }
   }
 
@@ -750,11 +806,16 @@
       var artifactName = (list && list.length) ? list[Math.floor(Math.random() * list.length)] : t('chest_artifact_unknown');
       var xp = ARTIFACT_RANK_XP[rank] != null ? ARTIFACT_RANK_XP[rank] : 18;
       state.artifactsFound.push(artifactName);
+      var chestStatDelta = null;
       if (typeof Sp.getStoredCharacter === 'function' && typeof Sp.setStoredCharacter === 'function') {
         var char = Sp.getStoredCharacter('adventure');
-        if (char) Sp.setStoredCharacter('adventure', applyArtifactStatBonus(Object.assign({}, char), rank));
+        if (char) {
+          var out = applyArtifactStatBonus(Object.assign({}, char), rank);
+          Sp.setStoredCharacter('adventure', out.character);
+          chestStatDelta = out.statDelta;
+        }
       }
-      if (saveDecorationEntry) saveDecorationEntry('artifact', artifactName, xp);
+      if (saveDecorationEntry) saveDecorationEntry('artifact', artifactName, xp, { icon: '\u{1F4F0}', statDelta: chestStatDelta });
       showChestResultToast('artifact', artifactName, isUltralegendary);
     } else if (roll === 2) {
       var xp = 18;
@@ -762,8 +823,9 @@
       showChestResultToast('xp', xp);
     } else {
       state.wounds += 1;
-      if (saveDecorationEntry) saveDecorationEntry('wound', t('chest_wound_label'), 0);
-      showChestResultToast('wound');
+      var woundDesc = getRandomWoundDescription(langKey);
+      if (saveDecorationEntry) saveDecorationEntry('wound', woundDesc.name, 0, { description: woundDesc.text });
+      showChestResultToast('wound', woundDesc.text);
     }
     if (Sp.renderExperiencePanel) Sp.renderExperiencePanel();
   }

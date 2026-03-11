@@ -1017,17 +1017,25 @@ body[data-theme="cute"] .btn-experience:hover {
   bottom: 68px;
   left: 16px;
   z-index: 99998;
-  width: 44px;
+  min-width: 44px;
   height: 44px;
-  padding: 0;
-  border-radius: 50%;
+  padding: 0 14px;
+  border-radius: 22px;
   border: 2px solid var(--xp-color);
   background: var(--bg-card);
   color: var(--xp-color);
-  font-size: 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: var(--shadow);
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   align-items: center;
   justify-content: center;
   transition: background 0.2s ease, box-shadow 0.2s ease;
@@ -1273,6 +1281,13 @@ body[data-theme="cute"] .exp-tier-legendary {
 .experience-list li.exp-entry-decoration .exp-decoration-icon {
   font-size: 1.1rem;
   flex-shrink: 0;
+}
+
+.exp-stat-delta,
+.exp-monster-stats {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .experience-list li.exp-entry-spoiled .exp-xp {
@@ -1978,8 +1993,9 @@ body[data-theme="cute"] .exp-tier-legendary {
 }
 
 .minigame-btn-choice {
-  padding: 12px 18px;
-  font-size: 1rem;
+  padding: 14px 22px;
+  font-size: 1.05rem;
+  min-height: 48px;
   border-radius: var(--radius);
   border: 2px solid var(--text-muted);
   background: var(--bg);
@@ -2031,6 +2047,12 @@ body[data-theme="cute"] .exp-tier-legendary {
   border-radius: 4px;
   width: 22%;
   left: 39%;
+}
+
+.minigame-timing-zone-visible {
+  background: rgba(45, 200, 80, 0.75);
+  border: 2px solid #2dff50;
+  z-index: 0;
 }
 
 .minigame-timing-slider {
@@ -2102,6 +2124,27 @@ body[data-theme="cute"] .exp-tier-legendary {
   transform: scale(0.98);
 }
 
+.minigame-tap-button.minigame-tap-big {
+  padding: 24px 48px;
+  font-size: 1.2rem;
+  min-height: 56px;
+}
+
+.minigame-tap-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.minigame-stop-zone {
+  background: rgba(45, 200, 80, 0.85);
+  border: 2px solid #2dff50;
+  z-index: 1;
+}
+
+.minigame-stop-wrap {
+  position: relative;
+}
+
 .minigame-stop-fill {
   position: absolute;
   left: 0;
@@ -2148,6 +2191,19 @@ body[data-theme="cute"] .exp-tier-legendary {
 .minigame-whack-cell.minigame-whack-lit {
   background: var(--accent);
   border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent);
+  animation: minigame-whack-pulse 0.5s ease infinite alternate;
+}
+
+@keyframes minigame-whack-pulse {
+  from { opacity: 1; }
+  to { opacity: 0.85; }
+}
+
+.minigame-twotarget-btn.minigame-whack-lit {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
   box-shadow: 0 0 16px var(--accent);
 }
 
