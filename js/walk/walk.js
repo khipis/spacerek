@@ -137,6 +137,11 @@
   }
 
   function searchAndPickPlace() {
+    var retryBtn = $('btn-retry-search');
+    if (retryBtn) {
+      retryBtn.classList.add('hidden');
+      retryBtn.style.display = 'none';
+    }
     show($('loading-place'), true);
     show($('walking-info'), false);
     setStatus(t('status_searching'), '');
@@ -207,6 +212,10 @@
         updateDebugPanel();
         show($('loading-place'), false);
         setStatus(t('status_search_error'), '');
+        if (retryBtn) {
+          retryBtn.classList.remove('hidden');
+          retryBtn.style.display = 'inline-block';
+        }
       });
   }
 
@@ -307,9 +316,12 @@
       if (imgUrl && photoEl) {
         photoEl.classList.remove('no-photo');
         photoEl.innerHTML = '<img src="' + String(imgUrl).replace(/^http:/, 'https:') + '" alt="" loading="lazy" />';
+      } else if (photoEl) {
+        photoEl.classList.add('no-photo');
+        photoEl.innerHTML = '<p class="reveal-no-photo-text">' + (t('place_no_photo') || 'Brak zdjęcia') + '</p>';
       }
-      if (extract && funfactEl && ciekawostkiEl) {
-        funfactEl.textContent = extract;
+      if (funfactEl && ciekawostkiEl) {
+        funfactEl.textContent = extract && extract.trim() ? extract : (t('place_no_description') || 'Brak opisu dla tego miejsca.');
         ciekawostkiEl.classList.remove('hidden');
       }
     }
@@ -558,5 +570,6 @@
   Sp.resetWalk = resetWalk;
   Sp.showWalkStats = showWalkStats;
   Sp.startWalk = startWalk;
+  Sp.searchAndPickPlace = searchAndPickPlace;
   Sp.initMapAndSearch = initMapAndSearch;
 })();

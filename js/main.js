@@ -428,6 +428,13 @@
     var btnSimulate = $('btn-simulate-arrival');
     if (btnSimulate) btnSimulate.addEventListener('click', simulateArrival);
 
+    var btnRetrySearch = $('btn-retry-search');
+    if (btnRetrySearch && typeof Sp.searchAndPickPlace === 'function') {
+      btnRetrySearch.addEventListener('click', function () {
+        Sp.searchAndPickPlace();
+      });
+    }
+
     var btnGoToDecoration = $('btn-go-to-decoration');
     if (btnGoToDecoration) {
       btnGoToDecoration.addEventListener('click', function () {

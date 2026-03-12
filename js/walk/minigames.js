@@ -256,7 +256,7 @@
     opts = opts || {};
     var level = opts.level || 1;
     var mult = dexTimeMult(opts);
-    var windowMs = Math.floor((Math.max(280, 520 - (level - 1) * 50)) * mult);
+    var windowMs = Math.floor((Math.max(420, 750 - (level - 1) * 60)) * mult);
     var successes = 0;
     var attempts = 0;
     var maxAttempts = 3;
@@ -328,7 +328,7 @@
     opts = opts || {};
     var level = opts.level || 1;
     var mult = dexTimeMult(opts);
-    var maxReactMs = Math.floor((Math.max(280, 480 - (level - 1) * 45)) * mult);
+    var maxReactMs = Math.floor((Math.max(420, 720 - (level - 1) * 50)) * mult);
     var successes = 0;
     var attempts = 0;
     var maxAttempts = 3;
@@ -355,7 +355,7 @@
         tFail = setTimeout(function () {
           if (reacted) return;
           onReact(false);
-        }, Math.floor((Math.max(520, 980 - (level - 1) * 90)) * mult));
+        }, Math.floor((Math.max(720, 1300 - (level - 1) * 100)) * mult));
       }, delay);
       var tFail = null;
 
@@ -724,8 +724,21 @@
     round();
   }
 
-  // Stop meter appears 3x so it shows up often; rapid-tap removed
-  var GAMES = [runStopMeter, runStopMeter, runStopMeter, runReflexRPS, runTimingHit, runDodgeSignal, runReaction, runTwoTargets, runHoldRelease, runSequence, runMatchIcon, runWhack];
+  // Stop meter appears 3x so it shows up often; rapid-tap removed. Each game has instruction key for "read then start" screen.
+  var GAMES = [
+    { key: 'minigame_instruction_stop', run: runStopMeter },
+    { key: 'minigame_instruction_stop', run: runStopMeter },
+    { key: 'minigame_instruction_stop', run: runStopMeter },
+    { key: 'minigame_instruction_rps', run: runReflexRPS },
+    { key: 'minigame_instruction_timing', run: runTimingHit },
+    { key: 'minigame_instruction_dodge', run: runDodgeSignal },
+    { key: 'minigame_instruction_reaction', run: runReaction },
+    { key: 'minigame_instruction_twotargets', run: runTwoTargets },
+    { key: 'minigame_instruction_hold', run: runHoldRelease },
+    { key: 'minigame_instruction_sequence', run: runSequence },
+    { key: 'minigame_instruction_match', run: runMatchIcon },
+    { key: 'minigame_instruction_whack', run: runWhack }
+  ];
 
   function startMinigame(monsterChar, onWin, onLose, monsterMarker) {
     showOverlay(monsterChar);
@@ -741,14 +754,32 @@
       playerStats: playerStats || {},
       monsterStats: monsterMarker ? { str: monsterMarker._monsterStr, dex: monsterMarker._monsterDex, int: monsterMarker._monsterInt, level: monsterMarker._monsterLevel } : {}
     };
-    var game = GAMES[Math.floor(Math.random() * GAMES.length)];
-    game(function (won) {
-      setTimeout(function () {
-        hideOverlay();
-        if (won && typeof onWin === 'function') onWin();
-        else if (!won && typeof onLose === 'function') onLose();
-      }, 100);
-    }, opts);
+    var chosen = GAMES[Math.floor(Math.random() * GAMES.length)];
+    var instructionText = t(chosen.key);
+    setContent(
+      '<p class="minigame-instruction minigame-instruction-intro">' + instructionText + '</p>' +
+      '<button type="button" id="minigame-start-btn" class="minigame-tap-button minigame-tap-big">' + t('minigame_start_btn') + '</button>'
+    );
+    var startBtn = getEl('minigame-start-btn');
+    if (startBtn) {
+      startBtn.addEventListener('click', function () {
+        chosen.run(function (won) {
+          setTimeout(function () {
+            hideOverlay();
+            if (won && typeof onWin === 'function') onWin();
+            else if (!won && typeof onLose === 'function') onLose();
+          }, 100);
+        }, opts);
+      }, { once: true });
+    } else {
+      chosen.run(function (won) {
+        setTimeout(function () {
+          hideOverlay();
+          if (won && typeof onWin === 'function') onWin();
+          else if (!won && typeof onLose === 'function') onLose();
+        }, 100);
+      }, opts);
+    }
   }
 
   Sp.startMinigame = startMinigame;
